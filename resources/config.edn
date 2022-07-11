@@ -1,0 +1,11 @@
+{
+ ;; handlers
+ :app.core/basic-handler {:greeting "world"}
+ :app.core/main-handler {:handler #ig/ref :app.core/basic-handler}
+
+ ;; server
+ :app.core/server {:handler #ig/ref :app.core/main-handler
+                   :port #or [#env PORT 3000]
+                   :join? false}
+}
+
