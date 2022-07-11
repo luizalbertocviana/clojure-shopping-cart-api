@@ -2,7 +2,8 @@
   (:require [aero.core :as aero]
             [clojure.java.io :as io]
             [reitit.ring :as ring]
-            [ring.adapter.jetty :as jetty])
+            [ring.adapter.jetty :as jetty]
+            [integrant.core :as ig])
   (:gen-class))
 
 (def system
