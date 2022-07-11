@@ -14,6 +14,13 @@
   {:status 200
    :body (str "hello " (:greeting system))})
 
+(def main-handler
+  (ring/ring-handler
+   (ring/router
+    [["/api"
+      ["/hello"
+       {:get {:handler handler}}]]])))
+
 (defn -main
   "Now I am greeting from a system config read by aero"
   [& args]
