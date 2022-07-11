@@ -10,6 +10,10 @@
       io/resource
       aero/read-config))
 
+(defn handler [request]
+  {:status 200
+   :body (str "hello " (:greeting system))})
+
 (defn -main
   "Now I am greeting from a system config read by aero"
   [& args]
