@@ -29,14 +29,16 @@
       ["/hello"
        {:get {:handler handler}}]]])))
 
-(def server (atom nil))
+(defmethod ig/init-key ::server
+  [_ {:keys [handler port join?]}]
+  (jetty/run-jetty handler {:port port :join? join?}))
 
-(defn start-server []
-  (reset! server (jetty/run-jetty main-handler {:port 3000 :join? false})))
+(defmethod ig/halt-key! ::server
+  [_ server]
+  (.stop server))
 
-(defn stop-server []
-  (.stop @server)
-  (reset! server nil))
+(def system (atom nil))
+
 
 (defn -main
   "starts server"
