@@ -15,11 +15,14 @@
       io/resource
       aero/read-config))
 
-(defn handler [request]
-  {:status 200
-   :body (str "hello " (:greeting system))})
+(defmethod ig/init-key ::basic-handler
+  [_ {:keys [greeting]}]
+  (fn [request]
+    {:status 200
+     :body (str "hello " greeting)}))
 
-(def main-handler
+(defmethod ig/init-key ::main-handler
+  [_ {:keys [handler]}]
   (ring/ring-handler
    (ring/router
     [["/api"
