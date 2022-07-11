@@ -2,35 +2,51 @@
   (:require [aero.core :as aero]
             [clojure.java.io :as io]
             [reitit.ring :as ring]
-            [ring.adapter.jetty :as jetty])
+            [ring.adapter.jetty :as jetty]
+            [integrant.core :as ig])
   (:gen-class))
 
-(def system
-  (-> "system.edn"
+(defmethod aero/reader 'ig/ref
+  [_ _ value]
+  (ig/ref value))
+
+(def config
+  (-> "config.edn"
       io/resource
       aero/read-config))
 
-(defn handler [request]
-  {:status 200
-   :body (str "hello " (:greeting system))})
+(defmethod ig/init-key ::basic-handler
+  [_ {:keys [greeting]}]
+  (fn [request]
+    {:status 200
+     :body (str "hello " greeting)}))
 
-(def main-handler
+(defmethod ig/init-key ::main-handler
+  [_ {:keys [handler]}]
   (ring/ring-handler
    (ring/router
     [["/api"
       ["/hello"
        {:get {:handler handler}}]]])))
 
-(def server (atom nil))
+(defmethod ig/init-key ::server
+  [_ {:keys [handler port join?]}]
+  (jetty/run-jetty handler {:port port :join? join?}))
 
-(defn start-server []
-  (reset! server (jetty/run-jetty main-handler {:port 3000 :join? false})))
+(defmethod ig/halt-key! ::server
+  [_ server]
+  (.stop server))
 
-(defn stop-server []
-  (.stop @server)
-  (reset! server nil))
+(def system (atom nil))
+
+(defn start-system []
+  (reset! system (ig/init config)))
+
+(defn stop-system []
+  (ig/halt! @system)
+  (reset! system nil))
 
 (defn -main
   "starts server"
   [& args]
-  (start-server))
+  (start-system))
