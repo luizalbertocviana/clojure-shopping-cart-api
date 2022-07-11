@@ -39,8 +39,14 @@
 
 (def system (atom nil))
 
+(defn start-system []
+  (reset! system (ig/init config)))
+
+(defn stop-system []
+  (ig/halt! @system)
+  (reset! system nil))
 
 (defn -main
   "starts server"
   [& args]
-  (start-server))
+  (start-system))
