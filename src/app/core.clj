@@ -1,7 +1,14 @@
 (ns app.core
+  (:require [aero.core :as aero]
+            [clojure.java.io :as io])
   (:gen-class))
 
+(def system
+  (-> "system.edn"
+      io/resource
+      aero/read-config))
+
 (defn -main
-  "I don't do a whole lot ... yet."
+  "Now I am greeting from a system config read by aero"
   [& args]
-  (println "Hello, World!"))
+  (println (str "hello " (:greeting system))))
