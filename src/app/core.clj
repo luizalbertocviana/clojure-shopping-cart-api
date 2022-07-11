@@ -6,8 +6,12 @@
             [integrant.core :as ig])
   (:gen-class))
 
-(def system
-  (-> "system.edn"
+(defmethod aero/reader 'ig/ref
+  [_ _ value]
+  (ig/ref value))
+
+(def config
+  (-> "config.edn"
       io/resource
       aero/read-config))
 
