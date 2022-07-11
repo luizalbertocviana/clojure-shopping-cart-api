@@ -31,6 +31,6 @@
   (reset! server nil))
 
 (defn -main
-  "Now I am greeting from a system config read by aero"
+  "starts server"
   [& args]
-  (println (str "hello " (:greeting system))))
+  (start-server))
