@@ -21,6 +21,15 @@
       ["/hello"
        {:get {:handler handler}}]]])))
 
+(def server (atom nil))
+
+(defn start-server []
+  (reset! server (jetty/run-jetty main-handler {:port 3000 :join? false})))
+
+(defn stop-server []
+  (.stop @server)
+  (reset! server nil))
+
 (defn -main
   "Now I am greeting from a system config read by aero"
   [& args]
