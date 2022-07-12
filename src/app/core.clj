@@ -45,6 +45,7 @@
 (def system (atom nil))
 
 (defn start-system []
+  (ig/load-namespaces config)
   (reset! system (ig/init config)))
 
 (defn stop-system []
