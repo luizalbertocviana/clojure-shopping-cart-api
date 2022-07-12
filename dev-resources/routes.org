@@ -1,0 +1,59 @@
+* API exploration :verb:
+
+  template http://localhost:3000/api
+
+** Admin endpoints
+
+   post /admin
+
+** User endpoints
+
+   template /user
+
+*** login 
+
+   post /login
+
+*** logout
+
+   post /logout
+
+*** create
+
+   post /create
+
+** Cart endpoints
+
+   template /cart
+
+*** clean
+
+    delete
+
+*** as json
+
+    get
+
+*** totals
+
+   get /totals
+
+*** add
+
+   put /add
+
+*** remove
+
+   put /remove
+
+** Discount endpoints
+
+   template /discounts
+
+*** create
+
+    post
+
+*** apply
+
+    put
