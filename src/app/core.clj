@@ -22,12 +22,17 @@
      :body (str "hello " greeting)}))
 
 (defmethod ig/init-key ::main-handler
-  [_ {:keys [handler]}]
+  [_ {:keys [user-routes
+             admin-routes
+             cart-routes
+             discounts-routes]}]
   (ring/ring-handler
    (ring/router
-    [["/api"
-      ["/hello"
-       {:get {:handler handler}}]]])))
+    ["/api"
+     user-routes
+     admin-routes
+     cart-routes
+     discounts-routes])))
 
 (defmethod ig/init-key ::server
   [_ {:keys [handler port join?]}]
