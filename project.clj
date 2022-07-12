@@ -7,7 +7,8 @@
                  [aero "1.1.6"]
                  [metosin/reitit "0.5.18"]
                  [ring/ring-jetty-adapter "1.7.1"]
-                 [integrant "0.8.0"]]
+                 [integrant "0.8.0"]
+                 [migratus "1.3.7"]]
   :main ^:skip-aot app.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
