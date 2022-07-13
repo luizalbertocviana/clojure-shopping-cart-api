@@ -10,12 +10,10 @@ following actions:
 - add one item to logged in user's shopping cart
 - remove one item to logged in user's shopping cart
 - clean logged in user's shopping cart
+- generate totals and subtotals of a logged in user's shopping cart
+- get logged in user's shopping cart content as JSON
 - register discount coupon
 - apply a discount coupon to logged in user's shopping cart
-- generate totals and subtotals of a logged in user's shopping cart
-- store logged in user's shopping cart into database (persistence)
-- retrieve logged in user's shopping cart from database
-- get logged in user's shopping cart content as JSON
 - register a product as part of inventory
 - remove a product from inventory
 - change product's price
@@ -230,5 +228,112 @@ If the coupom name is valid as well as the referred session, then the
 discount coupon is applied to that user's shopping cart.
 If the coupom name does not correspond to an existing coupon's name,
 a `404` response code will indicate that.
+If the referred session has been finished, a `401` response code will
+indicate that.
+
+### Inventory endpoints
+
+In order to register a product as part of inventory, an HTTP request
+like this should be used:
+
+    POST /api/inventory
+    
+    {
+        "name": "carrot",
+        "price": 3.99,
+        "amount": 20,
+        "session": <session-uuid>
+    }
+
+If there is no product in inventory with such name and the referred
+session is from an admin user, then the product is registered in
+inventory, which is signaled by a `201` response code.
+If the product name is already in use in inventory, that is signaled
+by a `409` response code.
+If the referred session is not from an admin user, that is signaled by
+a `403` error code.
+If the referred session has been finished, a `401` response code will
+indicate that.
+
+In order to delete a product from inventory, an HTTP request like this
+should be used:
+
+    DELETE /api/inventory
+    
+    {
+        "name": "carrot",
+        "session": <session-uuid>
+    }
+
+If the product name is indeed registered in inventory and the referred
+session is from an admin user, then the product entry is removed from
+inventory, which is signaled by a `200` response code.
+If the product name is not present in inventory, that is signaled by a
+`404` error code.
+If the referred session is not from an admin user, that is signaled by
+a `403` error code.
+If the referred session has been finished, a `401` response code will
+indicate that.
+
+In order to change a product's price, an HTTP request like this should
+be used:
+
+    PUT /api/inventory/price
+    
+    {
+        "name": "carrot",
+        "price": 4.99,
+        "session": <session-uuid>
+    }
+
+If the product name is indeed registered in inventory and the referred
+session is from an admin user, then the product entry has its price
+updated, which will be signaled by a `200` response code.
+If the product name is not present in inventory, that is signaled by a
+`404` error code.
+If the referred session is not from an admin user, that is signaled by
+a `403` error code.
+If the referred session has been finished, a `401` response code will
+indicate that.
+
+In order to increase the amount of items of a certain product in
+inventory, an HTTP request like this should be used:
+
+    PUT /api/inventory/increase
+    
+    {
+        "name": "carrot",
+        "amountToIncrease": 1000,
+        "session": <session-id>
+    }
+
+If the product name is indeed registered in inventory and the referred
+session is from an admin user, then the product entry has its item
+amount increased, which will be signaled by a `200` response code.
+If the product name is not present in inventory, that is signaled by a
+`404` error code.
+If the referred session is not from an admin user, that is signaled by
+a `403` error code.
+If the referred session has been finished, a `401` response code will
+indicate that.
+
+In order to decrease the amount of items of a certain product in
+inventory, an HTTP request like this should be used:
+
+    PUT /api/inventory/decrease
+    
+    {
+        "name": "carrot",
+        "amountToDecrease": 1000,
+        "session": <session-id>
+    }
+
+If the product name is indeed registered in inventory and the referred
+session is from an admin user, then the product entry has its item
+amount decreased, which will be signaled by a `200` response code.
+If the product name is not present in inventory, that is signaled by a
+`404` error code.
+If the referred session is not from an admin user, that is signaled by
+a `403` error code.
 If the referred session has been finished, a `401` response code will
 indicate that.
