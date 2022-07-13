@@ -11,7 +11,8 @@
                  [migratus "1.3.7"]
                  [org.slf4j/slf4j-log4j12 "1.7.36"]
                  [hikari-cp "2.14.0"]
-                 [org.postgresql/postgresql "42.4.0"]]
+                 [org.postgresql/postgresql "42.4.0"]
+                 [com.github.seancorfield/honeysql "2.2.891"]]
   :main ^:skip-aot app.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
