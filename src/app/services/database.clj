@@ -9,7 +9,7 @@
 
 (defmethod ig/halt-key! ::connection
   [_ datasource]
-  (cp/close-datasource datasource))
+  (cp/close-datasource (:datasource datasource)))
 
 (defmethod ig/init-key ::querier
   [_ {:keys [db-connection]}]
