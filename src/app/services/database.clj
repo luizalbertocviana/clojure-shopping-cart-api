@@ -7,6 +7,10 @@
   [_ datasource-options]
   {:datasource (cp/make-datasource datasource-options)})
 
+(defmethod ig/halt-key! ::connection
+  [_ datasource]
+  (cp/close-datasource datasource))
+
 (defmethod ig/init-key ::querier
   [_ {:keys [db-connection]}]
   (fn [sql-params]
