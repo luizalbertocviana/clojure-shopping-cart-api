@@ -25,14 +25,16 @@
   [_ {:keys [user-routes
              admin-routes
              cart-routes
-             discounts-routes]}]
+             discounts-routes
+             inventory-routes]}]
   (ring/ring-handler
    (ring/router
     ["/api"
      user-routes
      admin-routes
      cart-routes
-     discounts-routes])))
+     discounts-routes
+     inventory-routes])))
 
 (defmethod ig/init-key ::server
   [_ {:keys [handler port join?]}]
