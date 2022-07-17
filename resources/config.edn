@@ -8,6 +8,11 @@
                                     :server-name "localhost"
                                     :port-number #or [#env POSTGRES_PORT 5432]}
 
+ ;; database migrations
+ :app.services.database/migrations {:store :database
+                                    :migration-dir "migrations"
+                                    :db #ig/ref :app.services.database/connection}
+
  ;;database querier
  :app.services.database/querier {:db-connection #ig/ref :app.services.database/connection}
  ;; database transactor
