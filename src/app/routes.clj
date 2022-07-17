@@ -57,3 +57,26 @@
     {:post {:handler (fn [_]
                        {:status 200
                         :body "hello from /user/logout"})}}]])
+
+(defmethod ig/init-key ::inventory
+  [_ _]
+  ["/inventory"
+   [""
+    {:post {:handler (fn [_]
+                       {:status 200
+                        :body "hello from POST /inventory"})}
+     :delete {:handler (fn [_]
+                         {:status 200
+                          :body "hello from DELETE /inventory"})}}]
+   ["/price"
+    {:put {:handler (fn [_]
+                      {:status 200
+                       :body "hello from /inventory/price"})}}]
+   ["/increase"
+    {:put {:handler (fn [_]
+                      {:status 200
+                       :body "hello from /inventory/increase"})}}]
+   ["/decrease"
+    {:put {:handler (fn [_]
+                      {:status 200
+                       :body "hello from /inventory/decrease"})}}]])
