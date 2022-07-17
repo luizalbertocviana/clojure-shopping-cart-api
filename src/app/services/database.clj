@@ -1,6 +1,7 @@
 (ns app.services.database
   (:require [hikari-cp.core :as cp]
             [clojure.java.jdbc :as jdbc]
+            [migratus.core :as migratus]
             [integrant.core :as ig]))
 
 (defmethod ig/init-key ::connection
@@ -22,3 +23,7 @@
     (jdbc/with-db-transaction [t-conn db-connection]
       (for [sql-params sql-params-seq]
         (jdbc/execute! t-conn sql-params)))))
+
+(defmethod ig/init-key ::migrations
+  [_ config]
+  (migratus/migrate config))

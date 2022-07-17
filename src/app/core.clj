@@ -3,7 +3,8 @@
             [clojure.java.io :as io]
             [reitit.ring :as ring]
             [ring.adapter.jetty :as jetty]
-            [integrant.core :as ig])
+            [integrant.core :as ig]
+            [migratus.core :as migratus])
   (:gen-class))
 
 (defmethod aero/reader 'ig/ref
@@ -53,6 +54,13 @@
 (defn stop-system []
   (ig/halt! @system)
   (reset! system nil))
+
+(defn create-migration [name]
+  (let [minimal-migration-config
+        (-> config
+            :app.services.database/migrations
+            (select-keys [:migration-dir]))]
+    (migratus/create minimal-migration-config name)))
 
 (defn -main
   "starts server"
