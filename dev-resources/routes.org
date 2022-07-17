@@ -57,3 +57,27 @@
 *** apply
 
     put
+
+** Inventory endpoints
+
+   template /inventory
+
+*** Register product in inventory
+
+    post
+
+*** remove product from inventory
+
+    delete
+
+*** change price of item in inventory
+
+    put /price
+
+*** increase amount of available items of a certain product in inventory
+
+    put /increase
+
+*** decrease amount of available items of a certain product in inventory
+
+    put /decrease
