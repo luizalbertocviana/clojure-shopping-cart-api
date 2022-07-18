@@ -1,6 +1,7 @@
 * API exploration :verb:
 
   template http://localhost:3000/api
+  Content-Type: application/json; charset=utf-8
 
 ** Admin endpoints
 
@@ -21,6 +22,10 @@
 *** create
 
    post /create
+
+   {
+       "name": "luiz"
+   }
 
 ** Cart endpoints
 
