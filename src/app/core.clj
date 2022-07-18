@@ -2,6 +2,9 @@
   (:require [aero.core :as aero]
             [clojure.java.io :as io]
             [reitit.ring :as ring]
+            [reitit.ring.coercion :as rrc]
+            [reitit.ring.middleware.muuntaja :as muuntaja]
+            [muuntaja.core :as m]
             [ring.adapter.jetty :as jetty]
             [integrant.core :as ig]
             [migratus.core :as migratus])
@@ -29,13 +32,17 @@
              discounts-routes
              inventory-routes]}]
   (ring/ring-handler
-   (ring/router
-    ["/api"
-     user-routes
-     admin-routes
-     cart-routes
-     discounts-routes
-     inventory-routes])))
+   (ring/router ["/api"
+                 user-routes
+                 admin-routes
+                 cart-routes
+                 discounts-routes
+                 inventory-routes]
+                {:data {:muuntaja m/instance
+                        :middleware [muuntaja/format-middleware
+                                     rrc/coerce-exceptions-middleware
+                                     rrc/coerce-request-middleware
+                                     rrc/coerce-response-middleware]}})))
 
 (defmethod ig/init-key ::server
   [_ {:keys [handler port join?]}]
