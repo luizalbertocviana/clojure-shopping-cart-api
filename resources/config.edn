@@ -19,6 +19,10 @@
  :app.services.database/transactor {:db-connection #ig/ref :app.services.database/connection}
 
  ;; handlers
+
+ :app.handlers.user/create {:transactor #ig/ref :app.services.database/transactor
+                            :querier #ig/ref :app.services.database/querier}
+
  :app.core/basic-handler {:greeting "world"}
  :app.core/main-handler {:user-routes #ig/ref :app.routes/user
                          :admin-routes #ig/ref :app.routes/admin
@@ -27,7 +31,7 @@
                          :inventory-routes #ig/ref :app.routes/inventory}
 
  ;; routes
- :app.routes/user {}
+ :app.routes/user {:create-handler #ig/ref :app.handlers.user/create}
  :app.routes/admin {}
  :app.routes/cart {}
  :app.routes/discounts {}
