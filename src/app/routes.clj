@@ -43,12 +43,10 @@
                       :body "hello from PUT /discounts"})}}])
 
 (defmethod ig/init-key ::user
-  [_ _]
+  [_ {:keys [create-handler]}]
   ["/user"
    ["/create"
-    {:post {:handler (fn [_]
-                       {:status 200
-                        :body "hello from /user/create"})}}]
+    {:post {:handler create-handler}}]
    ["/login"
     {:post {:handler (fn [_]
                        {:status 200
