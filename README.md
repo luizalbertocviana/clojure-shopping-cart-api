@@ -32,6 +32,7 @@ In order to create a new user, it is utilized an HTTP request such as
 the following:
 
     POST /api/user/create
+    Content-Type: application/json; charset=utf-8
     
     {
         "name": "Luiz"
@@ -46,6 +47,7 @@ In order to log a user in, it is utilized an HTTP request like the one which
 follows:
 
     POST /api/user/login
+    Content-Type: application/json; charset=utf-8
     
     {
         "name": "Luiz"
@@ -67,6 +69,7 @@ In order to log a user out, it is utilized an HTTP request similar to
 the following one:
 
     POST /api/user/logout
+    Content-Type: application/json; charset=utf-8
     
     {
         "session": <session-uuid>
@@ -85,6 +88,7 @@ In order to promote a user to the admin role, an HTTP request like the
 following one should be used:
 
     POST /api/admin
+    Content-Type: application/json; charset=utf-8
     
     {
         "user": "userA",
@@ -110,6 +114,7 @@ In order to add one item to a logged in user's shopping cart, an HTTP
 request like this one should be used:
 
     PUT /api/cart/add
+    Content-Type: application/json; charset=utf-8
     
     {
         "product": "carrot",
@@ -132,6 +137,7 @@ In order to remove one item to a logged in user's shopping cart, an HTTP
 request like this one should be used:
 
     PUT /api/cart/remove
+    Content-Type: application/json; charset=utf-8
     
     {
         "product": "carrot",
@@ -151,6 +157,7 @@ In order to clean the entire content of a logged in user's shopping
 cart, an HTTP request as follows should be used:
 
     DELETE /api/cart
+    Content-Type: application/json; charset=utf-8
     
     {
         "session": <session-uuid>
@@ -163,6 +170,7 @@ In order to generate the subtotal (before any discount) and total
 should be used:
 
     GET /api/cart/totals
+    Content-Type: application/json; charset=utf-8
     
     {
         "session": <session-uuid>
@@ -178,6 +186,7 @@ In order to retrieve a JSON representation of a shopping cart, an HTTP
 as follows should be used:
 
     GET /api/cart
+    Content-Type: application/json; charset=utf-8
     
     {
         "session": <session-uuid>
@@ -195,6 +204,7 @@ In order to register a new discount coupon, an HTTP request as follows
 should be used:
 
     POST /api/discounts
+    Content-Type: application/json; charset=utf-8
     
     {
         "name": "coupon-a",
@@ -218,6 +228,7 @@ In order to apply a discount coupon to some user's shopping cart, an
 HTTP request like this should be used:
 
     PUT /api/discounts
+    Content-Type: application/json; charset=utf-8
     
     {
         "name": "coupon-a",
@@ -237,6 +248,7 @@ In order to register a product as part of inventory, an HTTP request
 like this should be used:
 
     POST /api/inventory
+    Content-Type: application/json; charset=utf-8
     
     {
         "name": "carrot",
@@ -259,6 +271,7 @@ In order to delete a product from inventory, an HTTP request like this
 should be used:
 
     DELETE /api/inventory
+    Content-Type: application/json; charset=utf-8
     
     {
         "name": "carrot",
@@ -279,6 +292,7 @@ In order to change a product's price, an HTTP request like this should
 be used:
 
     PUT /api/inventory/price
+    Content-Type: application/json; charset=utf-8
     
     {
         "name": "carrot",
@@ -300,6 +314,7 @@ In order to increase the amount of items of a certain product in
 inventory, an HTTP request like this should be used:
 
     PUT /api/inventory/increase
+    Content-Type: application/json; charset=utf-8
     
     {
         "name": "carrot",
@@ -321,6 +336,7 @@ In order to decrease the amount of items of a certain product in
 inventory, an HTTP request like this should be used:
 
     PUT /api/inventory/decrease
+    Content-Type: application/json; charset=utf-8
     
     {
         "name": "carrot",
