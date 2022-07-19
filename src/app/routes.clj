@@ -44,16 +44,15 @@
 
 (defmethod ig/init-key ::user
   [_ {:keys [create-handler
-             login-handler]}]
+             login-handler
+             logout-handler]}]
   ["/user"
    ["/create"
     {:post {:handler create-handler}}]
    ["/login"
     {:post {:handler login-handler}}]
    ["/logout"
-    {:post {:handler (fn [_]
-                       {:status 200
-                        :body "hello from /user/logout"})}}]])
+    {:post {:handler logout-handler}}]])
 
 (defmethod ig/init-key ::inventory
   [_ _]
