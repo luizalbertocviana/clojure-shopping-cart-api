@@ -15,6 +15,10 @@
 
    post /login
 
+   {
+       "name": "luiz"
+   }
+
 *** logout
 
    post /logout
@@ -24,7 +28,7 @@
    post /create
 
    {
-       "name": "luiz"
+       "name": "ana"
    }
 
 ** Cart endpoints
