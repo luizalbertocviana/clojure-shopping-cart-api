@@ -1,5 +1,5 @@
 {
- ;; databse connection
+ ;; database connection
  :app.services.database/connection {:pool-name "db-pool"
                                     :adapter "postgresql"
                                     :username #or [#env POSTGRES_USER "db_user"]
