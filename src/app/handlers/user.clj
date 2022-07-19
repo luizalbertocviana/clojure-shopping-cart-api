@@ -1,6 +1,7 @@
 (ns app.handlers.user
   (:require [integrant.core :as ig]
-            [honey.sql :as sql]))
+            [honey.sql :as sql])
+  (:import [java.util UUID]))
 
 (defn user-exists [querier name]
   (let [query {:select [:id]
