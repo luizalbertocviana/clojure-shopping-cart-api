@@ -79,7 +79,7 @@ In case the referred session is active, its user will be considered logged out
 until an appropriate request to `POST /api/user/login` is performed.
 A successful logout is signaled by the `200` response code. Also, any
 shopping cart data will be stored into the database.
-In case the referred session does not exist, no logunt is performed and such
+In case the referred session does not exist, no logout is performed and such
 failed logout attempt is indicated by the `404` response code.
 When an already finished session is requested to be finished a second
 time, their request is replied with the `400` response code.
