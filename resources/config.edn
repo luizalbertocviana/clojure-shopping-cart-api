@@ -27,6 +27,9 @@
  :app.handlers.user/logout {:transactor #ig/ref :app.services.database/transactor
                             :querier #ig/ref :app.services.database/querier}
 
+ :app.handlers.admin/handler {:transactor #ig/ref :app.services.database/transactor
+                              :querier #ig/ref :app.services.database/querier}
+
  :app.core/basic-handler {:greeting "world"}
  :app.core/main-handler {:user-routes #ig/ref :app.routes/user
                          :admin-routes #ig/ref :app.routes/admin
@@ -38,7 +41,7 @@
  :app.routes/user {:create-handler #ig/ref :app.handlers.user/create
                    :login-handler #ig/ref :app.handlers.user/login
                    :logout-handler #ig/ref :app.handlers.user/logout}
- :app.routes/admin {}
+ :app.routes/admin {:admin-handler #ig/ref :app.handlers.admin/handler}
  :app.routes/cart {}
  :app.routes/discounts {}
  :app.routes/inventory {}

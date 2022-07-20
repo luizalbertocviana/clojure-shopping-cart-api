@@ -2,12 +2,10 @@
   (:require [integrant.core :as ig]))
 
 (defmethod ig/init-key ::admin
-  [_ _]
+  [_ {:keys [admin-handler]}]
   ["/admin"
    [""
-    {:post {:handler (fn [_]
-                       {:status 200
-                        :body "hello from /admin"})}}]])
+    {:post {:handler admin-handler}}]])
 
 (defmethod ig/init-key ::cart
   [_ _]

@@ -7,6 +7,11 @@
 
    post /admin
 
+   {
+       "user": "maria",
+       "session": "cd2adfb9-0ec8-41d3-8359-df060c4b43f8"
+   }
+
 ** User endpoints
 
    template /user
@@ -16,7 +21,7 @@
    post /login
 
    {
-       "name": "luiz"
+       "name": "maria"
    }
 
 *** logout
