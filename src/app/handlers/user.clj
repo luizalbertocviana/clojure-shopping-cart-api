@@ -1,19 +1,8 @@
 (ns app.handlers.user
-  (:require [integrant.core :as ig]
+  (:require [app.handlers.utils :as utils]
+            [integrant.core :as ig]
             [honey.sql :as sql])
   (:import [java.util UUID]))
-
-(defn user-exists [querier name]
-  (let [query {:select [:id]
-               :from [:users]
-               :where [:= :name name]}
-        query-result (querier (sql/format query))
-        name-occurrences (count query-result)]
-    (if (= 1 name-occurrences)
-      (-> query-result
-          (nth 0)
-          :id)
-      nil)))
 
 (defn active-session [querier user-id]
   (let [query {:select [:id]
@@ -32,7 +21,7 @@
   (fn [req]
     (let [body-params (:body-params req)
           name (:name body-params)
-          user-id (user-exists querier name)]
+          user-id (utils/user-exists querier name)]
       (if (not user-id)
         (let [insertion {:insert-into :users
                          :columns [:name]
@@ -48,7 +37,7 @@
   (fn [req]
     (let [body-params (:body-params req)
           name (:name body-params)
-          user-id (user-exists querier name)]
+          user-id (utils/user-exists querier name)]
       (if user-id
         (let [active-session-id (active-session querier user-id)]
           (if (not active-session-id)
