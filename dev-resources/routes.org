@@ -21,7 +21,7 @@
    post /login
 
    {
-       "name": "joao"
+       "name": "luiz"
    }
 
 *** logout
@@ -85,15 +85,20 @@
     post
 
     {
-        "name": "carrot",
-        "price": 3.99,
-        "amount": 20,
-        "session": "4526d26a-1ed8-4c4f-99cd-341e21d790d2"
+        "name": "orange",
+        "price": 4.99,
+        "amount": 10,
+        "session": "1ef65bd7-a49d-4397-b77d-2b29a4a10806"
     }
 
 *** remove product from inventory
 
     delete
+
+    {
+        "name": "carrot",
+        "session": "1ef65bd7-a49d-4397-b77d-2b29a4a10806"
+    }
 
 *** change price of item in inventory
 
