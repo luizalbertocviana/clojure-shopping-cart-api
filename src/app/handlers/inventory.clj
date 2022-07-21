@@ -2,6 +2,10 @@
   (:require [integrant.core :as ig]
             [honey.sql :as sql]))
 
+(defn product-not-found-response [name]
+  {:status 404
+   :body (str "Product " name " does not exist")})
+
 (defn product-exists [querier name]
   (let [query {:select [[[:count :*]]]
                :from [:inventory]
@@ -53,8 +57,7 @@
 (defn attempt-to-delete-product [transactor querier name]
   (if (product-exists querier name)
     (delete-product transactor name)
-    {:status 404
-     :body (str "Product " name " does not exist")}))
+    (product-not-found-response name)))
 
 (defmethod ig/init-key ::delete-handler
   [_ {:keys [transactor querier]}]
