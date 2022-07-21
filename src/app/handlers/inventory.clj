@@ -27,6 +27,14 @@
     {:status 200
      :body (str "Product " name " removed from inventory")}))
 
+(defn increase-product-amount [transactor name amount-to-increase]
+  (let [update {:update :inventory
+                :set {:amount [:+ :amount amount-to-increase]}
+                :where [:= :name name]}]
+    (transactor (sql/format update))
+    {:status 200
+     :body (str "Product " name " amount has been increased by " amount-to-increase)}))
+
 (defn attempt-to-register-product [transactor querier name price amount]
   (if (not (product-exists querier name))
     (register-new-product transactor name price amount)
@@ -54,3 +62,16 @@
     (let [body-params (:body-params req)
           name (:name body-params)]
       (attempt-to-delete-product transactor querier name))))
+
+(defn attempt-to-increase-product-amount [transactor querier name amount-to-increase]
+  (if (product-exists querier name)
+    (increase-product-amount transactor name amount-to-increase)
+    (product-not-found-response name)))
+
+(defmethod ig/init-key ::amount-increase-handler
+  [_ {:keys [transactor querier]}]
+  (fn [req]
+    (let [body-params (:body-params req)
+          name (:name body-params)
+          amount-to-increase (:amountToIncrease body-params)]
+      (attempt-to-increase-product-amount transactor querier name amount-to-increase))))
