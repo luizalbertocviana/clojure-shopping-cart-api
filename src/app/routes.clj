@@ -55,15 +55,14 @@
 (defmethod ig/init-key ::inventory
   [_ {:keys [active-session-middleware
              admin-session-middleware
-             post-handler]}]
+             post-handler
+             delete-handler]}]
   ["/inventory"
    {:middleware [active-session-middleware
                  admin-session-middleware]}
    [""
     {:post {:handler post-handler}
-     :delete {:handler (fn [_]
-                         {:status 200
-                          :body "hello from DELETE /inventory"})}}]
+     :delete {:handler delete-handler}}]
    ["/price"
     {:put {:handler (fn [_]
                       {:status 200
