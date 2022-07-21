@@ -108,6 +108,12 @@
 
     put /increase
 
+    {
+        "name": "carrot",
+        "amountToIncrease": 1000,
+        "session": "1ef65bd7-a49d-4397-b77d-2b29a4a10806"
+    }
+
 *** decrease amount of available items of a certain product in inventory
 
     put /decrease
