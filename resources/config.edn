@@ -36,6 +36,8 @@
 
  :app.handlers.inventory/post-handler {:transactor #ig/ref :app.services.database/transactor
                                        :querier #ig/ref :app.services.database/querier}
+ :app.handlers.inventory/delete-handler {:transactor #ig/ref :app.services.database/transactor
+                                         :querier #ig/ref :app.services.database/querier}
 
  :app.core/basic-handler {:greeting "world"}
  :app.core/main-handler {:user-routes #ig/ref :app.routes/user
@@ -53,7 +55,8 @@
  :app.routes/discounts {}
  :app.routes/inventory {:active-session-middleware #ig/ref :app.middleware/active-session
                         :admin-session-middleware #ig/ref :app.middleware/admin-session
-                        :post-handler #ig/ref :app.handlers.inventory/post-handler}
+                        :post-handler #ig/ref :app.handlers.inventory/post-handler
+                        :delete-handler #ig/ref :app.handlers.inventory/delete-handler}
 
  ;; server
  :app.core/server {:handler #ig/ref :app.core/main-handler
