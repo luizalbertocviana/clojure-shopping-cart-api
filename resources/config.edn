@@ -18,6 +18,10 @@
  ;; database transactor
  :app.services.database/transactor {:db-connection #ig/ref :app.services.database/connection}
 
+ ;; middleware
+ :app.middleware/active-session {:querier #ig/ref :app.services.database/querier}
+ :app.middleware/admin-session {:querier #ig/ref :app.services.database/querier}
+
  ;; handlers
 
  :app.handlers.user/create {:transactor #ig/ref :app.services.database/transactor
@@ -29,6 +33,9 @@
 
  :app.handlers.admin/handler {:transactor #ig/ref :app.services.database/transactor
                               :querier #ig/ref :app.services.database/querier}
+
+ :app.handlers.inventory/post-handler {:transactor #ig/ref :app.services.database/transactor
+                                       :querier #ig/ref :app.services.database/querier}
 
  :app.core/basic-handler {:greeting "world"}
  :app.core/main-handler {:user-routes #ig/ref :app.routes/user
@@ -44,7 +51,9 @@
  :app.routes/admin {:admin-handler #ig/ref :app.handlers.admin/handler}
  :app.routes/cart {}
  :app.routes/discounts {}
- :app.routes/inventory {}
+ :app.routes/inventory {:active-session-middleware #ig/ref :app.middleware/active-session
+                        :admin-session-middleware #ig/ref :app.middleware/admin-session
+                        :post-handler #ig/ref :app.handlers.inventory/post-handler}
 
  ;; server
  :app.core/server {:handler #ig/ref :app.core/main-handler
