@@ -8,8 +8,8 @@
    post /admin
 
    {
-       "user": "maria",
-       "session": "cd2adfb9-0ec8-41d3-8359-df060c4b43f8"
+       "user": "luiz",
+       "session": "b74af46f-a2f8-41f1-8914-cff57ee1129e"
    }
 
 ** User endpoints
@@ -21,7 +21,7 @@
    post /login
 
    {
-       "name": "maria"
+       "name": "joao"
    }
 
 *** logout
@@ -29,7 +29,7 @@
    post /logout
 
    {
-       "session": "de5f9fda-d1ed-4f11-9166-81c2c40ae485"
+       "session": "b74af46f-a2f8-41f1-8914-cff57ee1129e"
    }
 
 *** create
@@ -83,6 +83,13 @@
 *** Register product in inventory
 
     post
+
+    {
+        "name": "carrot",
+        "price": 3.99,
+        "amount": 20,
+        "session": "4526d26a-1ed8-4c4f-99cd-341e21d790d2"
+    }
 
 *** remove product from inventory
 
