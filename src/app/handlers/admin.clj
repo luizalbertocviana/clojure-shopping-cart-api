@@ -1,5 +1,5 @@
 (ns app.handlers.admin
-  (:require [app.handlers.utils :as utils]
+  (:require [app.utils :as utils]
             [integrant.core :as ig]
             [honey.sql :as sql])
   (:import [java.util UUID]))
@@ -50,19 +50,10 @@
        :body (str "User " promoting-user " is already an admin")})))
 
 (defn attempt-to-promote-another-admin [transactor querier session-id promoting-user user-id]
-  (let [admin-session-query {:select [[[:count :*]]]
-                             :from [:sessions :admins]
-                             :where [:and [:= :sessions.user-id :admins.user-id]
-                                          [:= :sessions.id session-id]]}
-        admin-session-result (querier (sql/format admin-session-query))
-        admin-session (-> admin-session-result
-                          (nth 0)
-                          :count
-                          (= 1))]
-    (if admin-session
-      (attempt-to-promote-in-admin-session transactor querier promoting-user user-id)
-      {:status 403
-       :body (str "Session " session-id " does not belong to an admin user")})))
+  (if (utils/admin-session querier session-id)
+    (attempt-to-promote-in-admin-session transactor querier promoting-user user-id)
+    {:status 403
+     :body (str "Session " session-id " does not belong to an admin user")}))
 
 (defn attempt-to-promote-existing-user [transactor querier session-id promoting-user user-id]
   (let [no-admins-query {:select [[[:count :*]]]
