@@ -19,6 +19,10 @@
       io/resource
       aero/read-config))
 
+(defmethod ig/init-key :default
+  [_ arg-map]
+  arg-map)
+
 (defmethod ig/init-key ::basic-handler
   [_ {:keys [greeting]}]
   (fn [request]
