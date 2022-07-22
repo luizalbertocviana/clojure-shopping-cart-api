@@ -39,6 +39,14 @@
     {:status 200
      :body (str "Product " name " amount has been increased by " amount-to-increase)}))
 
+(defn change-existing-product-price [transactor name new-price]
+  (let [update {:update :inventory
+                :set {:price new-price}
+                :where [:= :name name]}]
+    (transactor (sql/format update))
+    {:status 200
+     :body (str "Product " name " had its price updated to " new-price)}))
+
 (defn attempt-to-register-product [transactor querier name price amount]
   (if (not (product-exists querier name))
     (register-new-product transactor name price amount)
@@ -78,3 +86,22 @@
           name (:name body-params)
           amount-to-increase (:amountToIncrease body-params)]
       (attempt-to-increase-product-amount transactor querier name amount-to-increase))))
+
+(defn attempt-to-change-existing-product-price [transactor name new-price]
+  (if (<= 0 new-price)
+    (change-existing-product-price transactor name new-price)
+    {:status 400
+     :body (str "Price must be non-negative. Price sent was " new-price)}))
+
+(defn attempt-to-change-product-price [transactor querier name new-price]
+  (if (product-exists querier name)
+    (attempt-to-change-existing-product-price transactor name new-price)
+    (product-not-found-response name)))
+
+(defmethod ig/init-key ::price-change-handler
+  [_ {:keys [transactor querier]}]
+  (fn [req]
+    (let [body-params (:body-params req)
+          name (:name body-params)
+          new-price (:price body-params)]
+      (attempt-to-change-product-price transactor querier name new-price))))
