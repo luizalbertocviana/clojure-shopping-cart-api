@@ -39,6 +39,14 @@
     {:status 200
      :body (str "Product " name " amount has been increased by " amount-to-increase)}))
 
+(defn decrease-product-amount [transactor name amount-to-decrease]
+  (let [update {:update :inventory
+                :set {:amount [:- :amount amount-to-decrease]}
+                :where [:= :name name]}]
+    (transactor (sql/format update))
+    {:status 200
+     :body (str "Product " name " amount has been decreased by " amount-to-decrease)}))
+
 (defn change-existing-product-price [transactor name new-price]
   (let [update {:update :inventory
                 :set {:price new-price}
@@ -86,6 +94,32 @@
           name (:name body-params)
           amount-to-increase (:amountToIncrease body-params)]
       (attempt-to-increase-product-amount transactor querier name amount-to-increase))))
+
+(defn attempt-to-decrease-existing-product-amount [transactor querier name amount-to-decrease]
+  (let [current-product-amount-query {:select [:amount]
+                                      :from [:inventory]
+                                      :where [:= :name name]}
+        current-product-amount-result (querier (sql/format current-product-amount-query))
+        current-product-amount (-> current-product-amount-result
+                                   (nth 0)
+                                   :amount)]
+    (if (<= amount-to-decrease current-product-amount)
+      (decrease-product-amount transactor name amount-to-decrease)
+      {:status 400
+       :body (str "Product " name " current amount is " current-product-amount " which is lower than " amount-to-decrease)})))
+
+(defn attempt-to-decrease-product-amount [transactor querier name amount-to-decrease]
+  (if (product-exists querier name)
+    (attempt-to-decrease-existing-product-amount transactor querier name amount-to-decrease)
+    (product-not-found-response name)))
+
+(defmethod ig/init-key ::amount-decrease-handler
+  [_ {:keys [transactor querier]}]
+  (fn [req]
+    (let [body-params (:body-params req)
+          name (:name body-params)
+          amount-to-decrease (:amountToDecrease body-params)]
+      (attempt-to-decrease-product-amount transactor querier name amount-to-decrease))))
 
 (defn attempt-to-change-existing-product-price [transactor name new-price]
   (if (<= 0 new-price)
