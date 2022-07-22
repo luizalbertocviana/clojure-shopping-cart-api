@@ -17,6 +17,9 @@
  :app.services.database/querier {:db-connection #ig/ref :app.services.database/connection}
  ;; database transactor
  :app.services.database/transactor {:db-connection #ig/ref :app.services.database/connection}
+ ;; both together
+ :app.services.database/components {:transactor #ig/ref :app.services.database/transactor
+                                    :querier #ig/ref :app.services.database/querier}
 
  ;; middleware
  :app.middleware/active-session {:querier #ig/ref :app.services.database/querier}
@@ -24,22 +27,15 @@
 
  ;; handlers
 
- :app.handlers.user/create {:transactor #ig/ref :app.services.database/transactor
-                            :querier #ig/ref :app.services.database/querier}
- :app.handlers.user/login {:transactor #ig/ref :app.services.database/transactor
-                           :querier #ig/ref :app.services.database/querier}
- :app.handlers.user/logout {:transactor #ig/ref :app.services.database/transactor
-                            :querier #ig/ref :app.services.database/querier}
+ :app.handlers.user/create #ref [:app.services.database/components]
+ :app.handlers.user/login #ref [:app.services.database/components]
+ :app.handlers.user/logout #ref [:app.services.database/components]
 
- :app.handlers.admin/handler {:transactor #ig/ref :app.services.database/transactor
-                              :querier #ig/ref :app.services.database/querier}
+ :app.handlers.admin/handler #ref [:app.services.database/components]
 
- :app.handlers.inventory/post-handler {:transactor #ig/ref :app.services.database/transactor
-                                       :querier #ig/ref :app.services.database/querier}
- :app.handlers.inventory/delete-handler {:transactor #ig/ref :app.services.database/transactor
-                                         :querier #ig/ref :app.services.database/querier}
- :app.handlers.inventory/amount-increase-handler {:transactor #ig/ref :app.services.database/transactor
-                                                  :querier #ig/ref :app.services.database/querier}
+ :app.handlers.inventory/post-handler #ref [:app.services.database/components]
+ :app.handlers.inventory/delete-handler #ref [:app.services.database/components]
+ :app.handlers.inventory/amount-increase-handler #ref [:app.services.database/components]
 
  :app.core/basic-handler {:greeting "world"}
  :app.core/main-handler {:user-routes #ig/ref :app.routes/user
