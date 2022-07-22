@@ -104,6 +104,12 @@
 
     put /price
 
+    {
+        "name": "carrot",
+        "price": 5.99,
+        "session": "35dd2f6d-be30-4abe-8d2e-4208cdd19424"
+    }
+
 *** increase amount of available items of a certain product in inventory
 
     put /increase
