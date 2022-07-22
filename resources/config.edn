@@ -41,7 +41,6 @@
 
  :app.handlers.discounts/post #ref [:app.services.database/components]
 
- :app.core/basic-handler {:greeting "world"}
  :app.core/main-handler {:user-routes #ig/ref :app.routes/user
                          :admin-routes #ig/ref :app.routes/admin
                          :cart-routes #ig/ref :app.routes/cart

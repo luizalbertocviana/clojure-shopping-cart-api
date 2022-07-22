@@ -23,12 +23,6 @@
   [_ arg-map]
   arg-map)
 
-(defmethod ig/init-key ::basic-handler
-  [_ {:keys [greeting]}]
-  (fn [request]
-    {:status 200
-     :body (str "hello " greeting)}))
-
 (defmethod ig/init-key ::main-handler
   [_ {:keys [user-routes
              admin-routes
