@@ -36,6 +36,7 @@
  :app.handlers.inventory/post-handler #ref [:app.services.database/components]
  :app.handlers.inventory/delete-handler #ref [:app.services.database/components]
  :app.handlers.inventory/amount-increase-handler #ref [:app.services.database/components]
+ :app.handlers.inventory/amount-decrease-handler #ref [:app.services.database/components]
  :app.handlers.inventory/price-change-handler #ref [:app.services.database/components]
 
  :app.core/basic-handler {:greeting "world"}
@@ -57,6 +58,7 @@
                         :post-handler #ig/ref :app.handlers.inventory/post-handler
                         :delete-handler #ig/ref :app.handlers.inventory/delete-handler
                         :amount-increase-handler #ig/ref :app.handlers.inventory/amount-increase-handler
+                        :amount-decrease-handler #ig/ref :app.handlers.inventory/amount-decrease-handler
                         :price-change-handler #ig/ref :app.handlers.inventory/price-change-handler}
 
  ;; server

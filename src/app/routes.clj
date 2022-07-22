@@ -58,6 +58,7 @@
              post-handler
              delete-handler
              amount-increase-handler
+             amount-decrease-handler
              price-change-handler]}]
   ["/inventory"
    {:middleware [active-session-middleware
@@ -70,6 +71,4 @@
    ["/increase"
     {:put {:handler amount-increase-handler}}]
    ["/decrease"
-    {:put {:handler (fn [_]
-                      {:status 200
-                       :body "hello from /inventory/decrease"})}}]])
+    {:put {:handler amount-decrease-handler}}]])
