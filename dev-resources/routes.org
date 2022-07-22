@@ -72,6 +72,13 @@
 
     post
 
+    {
+        "name": "coupon-b",
+        "amount": 1000,
+        "discount": 0.15,
+        "session": "48b4c6aa-7649-4bf6-ad44-d53dcfa371db"
+    }
+
 *** apply
 
     put
