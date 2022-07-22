@@ -31,11 +31,13 @@
                        :body "hello from /cart/totals"})}}]])
 
 (defmethod ig/init-key ::discounts
-  [_ _]
+  [_ {:keys [active-session-middleware
+             admin-session-middleware
+             post-handler]}]
   ["/discounts"
-   {:post {:handler (fn [_]
-                      {:status 200
-                       :body "hello from POST /discounts"})}
+   {:middleware [active-session-middleware]
+    :post {:middleware [admin-session-middleware]
+           :handler post-handler}
     :put {:handler (fn [_]
                      {:status 200
                       :body "hello from PUT /discounts"})}}])

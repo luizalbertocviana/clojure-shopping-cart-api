@@ -39,6 +39,8 @@
  :app.handlers.inventory/amount-decrease-handler #ref [:app.services.database/components]
  :app.handlers.inventory/price-change-handler #ref [:app.services.database/components]
 
+ :app.handlers.discounts/post #ref [:app.services.database/components]
+
  :app.core/basic-handler {:greeting "world"}
  :app.core/main-handler {:user-routes #ig/ref :app.routes/user
                          :admin-routes #ig/ref :app.routes/admin
@@ -52,7 +54,9 @@
                    :logout-handler #ig/ref :app.handlers.user/logout}
  :app.routes/admin {:admin-handler #ig/ref :app.handlers.admin/handler}
  :app.routes/cart {}
- :app.routes/discounts {}
+ :app.routes/discounts {:active-session-middleware #ig/ref :app.middleware/active-session
+                        :admin-session-middleware #ig/ref :app.middleware/admin-session
+                        :post-handler #ig/ref :app.handlers.discounts/post}
  :app.routes/inventory {:active-session-middleware #ig/ref :app.middleware/active-session
                         :admin-session-middleware #ig/ref :app.middleware/admin-session
                         :post-handler #ig/ref :app.handlers.inventory/post-handler
