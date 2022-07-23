@@ -73,15 +73,20 @@
     post
 
     {
-        "name": "coupon-b",
-        "amount": 1000,
+        "name": "coupon-c",
+        "amount": 1,
         "discount": 0.15,
-        "session": "48b4c6aa-7649-4bf6-ad44-d53dcfa371db"
+        "session": "5011633a-71f3-4ef0-ba88-51da15d8c415"
     }
 
 *** apply
 
     put
+
+    {
+        "name": "coupon-c",
+        "session": "991e55bd-67d4-4111-95fa-7403bd3a9b3b"
+    }
 
 ** Inventory endpoints
 
