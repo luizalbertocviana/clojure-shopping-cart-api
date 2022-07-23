@@ -235,9 +235,9 @@ HTTP request like this should be used:
         "session": <session-uuid>
     }
 
-If the coupom name is valid as well as the referred session, then the
+If the coupon name is valid as well as the referred session, then the
 discount coupon is applied to that user's shopping cart.
-If the coupom name does not correspond to an existing coupon's name,
+If the coupon name does not correspond to an existing coupon's name,
 a `404` response code will indicate that.
 If the referred session has been finished, a `401` response code will
 indicate that.
