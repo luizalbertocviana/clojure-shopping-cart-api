@@ -14,7 +14,7 @@
   [_ _ value]
   (ig/ref value))
 
-(def config
+(defn config []
   (-> "config.edn"
       io/resource
       aero/read-config))
@@ -53,8 +53,9 @@
 (def system (atom nil))
 
 (defn start-system []
-  (ig/load-namespaces config)
-  (reset! system (ig/init config)))
+  (let [config (config)]
+    (ig/load-namespaces config)
+    (reset! system (ig/init config))))
 
 (defn stop-system []
   (ig/halt! @system)
