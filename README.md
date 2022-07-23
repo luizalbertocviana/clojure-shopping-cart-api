@@ -239,6 +239,8 @@ If the coupon name is valid as well as the referred session, then the
 discount coupon is applied to that user's shopping cart.
 If the coupon name does not correspond to an existing coupon's name,
 a `404` response code will indicate that.
+If the coupon has passed its expiration timestamp, a `409` response
+code will indicate that.
 If the referred session has been finished, a `401` response code will
 indicate that.
 
