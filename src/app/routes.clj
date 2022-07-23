@@ -33,14 +33,13 @@
 (defmethod ig/init-key ::discounts
   [_ {:keys [active-session-middleware
              admin-session-middleware
-             post-handler]}]
+             post-handler
+             put-handler]}]
   ["/discounts"
    {:middleware [active-session-middleware]
     :post {:middleware [admin-session-middleware]
            :handler post-handler}
-    :put {:handler (fn [_]
-                     {:status 200
-                      :body "hello from PUT /discounts"})}}])
+    :put {:handler put-handler}}])
 
 (defmethod ig/init-key ::user
   [_ {:keys [create-handler
