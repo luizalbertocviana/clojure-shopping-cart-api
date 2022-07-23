@@ -63,7 +63,7 @@
 
 (defn create-migration [name]
   (let [minimal-migration-config
-        (-> config
+        (-> (config)
             :app.services.database/migrations
             (select-keys [:migration-dir]))]
     (migratus/create minimal-migration-config name)))
