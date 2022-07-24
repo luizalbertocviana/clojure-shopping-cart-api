@@ -1,6 +1,10 @@
 (ns app.utils
   (:require [honey.sql :as sql]))
 
+(defn non-positive-amount-response [amount]
+  {:status 400
+   :body (str "Amount must be positive. Amount sent was " amount)})
+
 (defn product-not-found-response [name]
   {:status 404
    :body (str "Product " name " does not exist")})
@@ -13,6 +17,15 @@
     (-> result
         (nth 0)
         :user_id)))
+
+(defn current-product-amount [querier product-name]
+  (let [query {:select [:amount]
+               :from [:inventory]
+               :where [:= :name product-name]}
+        result (querier (sql/format query))]
+    (-> result
+        (nth 0)
+        :amount)))
 
 (defn product-exists [querier name]
   (let [query {:select [:id]

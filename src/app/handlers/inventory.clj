@@ -83,13 +83,7 @@
       (attempt-to-increase-product-amount transactor querier name amount-to-increase))))
 
 (defn attempt-to-decrease-existing-product-amount [transactor querier name amount-to-decrease]
-  (let [current-product-amount-query {:select [:amount]
-                                      :from [:inventory]
-                                      :where [:= :name name]}
-        current-product-amount-result (querier (sql/format current-product-amount-query))
-        current-product-amount (-> current-product-amount-result
-                                   (nth 0)
-                                   :amount)]
+  (let [current-product-amount (utils/current-product-amount querier name)]
     (if (<= amount-to-decrease current-product-amount)
       (decrease-product-amount transactor name amount-to-decrease)
       {:status 400
