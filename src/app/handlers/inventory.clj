@@ -1,20 +1,7 @@
 (ns app.handlers.inventory
-  (:require [integrant.core :as ig]
+  (:require [app.utils :as utils]
+            [integrant.core :as ig]
             [honey.sql :as sql]))
-
-(defn product-not-found-response [name]
-  {:status 404
-   :body (str "Product " name " does not exist")})
-
-(defn product-exists [querier name]
-  (let [query {:select [[[:count :*]]]
-               :from [:inventory]
-               :where [:= :name name]}
-        result (querier (sql/format query))]
-    (-> result
-        (nth 0)
-        :count
-        (= 1))))
 
 (defn register-new-product [transactor name price amount]
   (let [insertion {:insert-into :inventory
@@ -56,7 +43,7 @@
      :body (str "Product " name " had its price updated to " new-price)}))
 
 (defn attempt-to-register-product [transactor querier name price amount]
-  (if (not (product-exists querier name))
+  (if (not (utils/product-exists querier name))
     (register-new-product transactor name price amount)
     {:status 409
      :body (str "Product " name " is already registered")}))
@@ -71,9 +58,9 @@
       (attempt-to-register-product transactor querier name price amount))))
 
 (defn attempt-to-delete-product [transactor querier name]
-  (if (product-exists querier name)
+  (if (utils/product-exists querier name)
     (delete-product transactor name)
-    (product-not-found-response name)))
+    (utils/product-not-found-response name)))
 
 (defmethod ig/init-key ::delete-handler
   [_ {:keys [transactor querier]}]
@@ -83,9 +70,9 @@
       (attempt-to-delete-product transactor querier name))))
 
 (defn attempt-to-increase-product-amount [transactor querier name amount-to-increase]
-  (if (product-exists querier name)
+  (if (utils/product-exists querier name)
     (increase-product-amount transactor name amount-to-increase)
-    (product-not-found-response name)))
+    (utils/product-not-found-response name)))
 
 (defmethod ig/init-key ::amount-increase-handler
   [_ {:keys [transactor querier]}]
@@ -96,22 +83,16 @@
       (attempt-to-increase-product-amount transactor querier name amount-to-increase))))
 
 (defn attempt-to-decrease-existing-product-amount [transactor querier name amount-to-decrease]
-  (let [current-product-amount-query {:select [:amount]
-                                      :from [:inventory]
-                                      :where [:= :name name]}
-        current-product-amount-result (querier (sql/format current-product-amount-query))
-        current-product-amount (-> current-product-amount-result
-                                   (nth 0)
-                                   :amount)]
+  (let [current-product-amount (utils/current-product-amount querier name)]
     (if (<= amount-to-decrease current-product-amount)
       (decrease-product-amount transactor name amount-to-decrease)
       {:status 400
        :body (str "Product " name " current amount is " current-product-amount " which is lower than " amount-to-decrease)})))
 
 (defn attempt-to-decrease-product-amount [transactor querier name amount-to-decrease]
-  (if (product-exists querier name)
+  (if (utils/product-exists querier name)
     (attempt-to-decrease-existing-product-amount transactor querier name amount-to-decrease)
-    (product-not-found-response name)))
+    (utils/product-not-found-response name)))
 
 (defmethod ig/init-key ::amount-decrease-handler
   [_ {:keys [transactor querier]}]
@@ -128,9 +109,9 @@
      :body (str "Price must be non-negative. Price sent was " new-price)}))
 
 (defn attempt-to-change-product-price [transactor querier name new-price]
-  (if (product-exists querier name)
+  (if (utils/product-exists querier name)
     (attempt-to-change-existing-product-price transactor name new-price)
-    (product-not-found-response name)))
+    (utils/product-not-found-response name)))
 
 (defmethod ig/init-key ::price-change-handler
   [_ {:keys [transactor querier]}]

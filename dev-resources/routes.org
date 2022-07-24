@@ -60,6 +60,12 @@
 
    put /add
 
+   {
+       "product": "carrot",
+       "amount": 17,
+       "session": "fc5061a9-c736-4049-81df-3f7ecdf700ef"
+   }
+
 *** remove
 
    put /remove
