@@ -1,16 +1,8 @@
 (ns app.handlers.discounts
-  (:require [integrant.core :as ig]
+  (:require [app.utils :as utils]
+            [integrant.core :as ig]
             [honey.sql :as sql])
   (:import [java.util UUID]))
-
-(defn session-id->user-id [querier session-id]
-  (let [query {:select [:user-id]
-               :from [:sessions]
-               :where [:= :id session-id]}
-        result (querier (sql/format query))]
-    (-> result
-        (nth 0)
-        :user_id)))
 
 (defn discount-coupon-exists [querier coupon-name]
   (let [query {:select [:id]
@@ -46,8 +38,7 @@
 (defn attempt-to-create-new-discount-coupon [transactor name amount discount]
   (cond
     (not (pos? amount))
-    {:status 400
-     :body (str "Amount must be positive. Amount sent was " amount)}
+    (utils/non-positive-amount-response amount)
     (not (<= 0.01 discount 1.00))
     {:status 400
      :body (str "Discount must be between 0.01 and 1.00. Discount sent was " discount)}
@@ -112,5 +103,5 @@
     (let [body-params (:body-params req)
           coupon-name (:name body-params)
           session-id (UUID/fromString (:session body-params))
-          user-id (session-id->user-id querier session-id)]
+          user-id (utils/session-id->user-id querier session-id)]
       (attempt-to-apply-discount-coupon transactor querier coupon-name user-id))))

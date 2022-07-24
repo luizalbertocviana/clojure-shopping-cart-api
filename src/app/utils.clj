@@ -1,6 +1,15 @@
 (ns app.utils
   (:require [honey.sql :as sql]))
 
+(defn session-id->user-id [querier session-id]
+  (let [query {:select [:user-id]
+               :from [:sessions]
+               :where [:= :id session-id]}
+        result (querier (sql/format query))]
+    (-> result
+        (nth 0)
+        :user_id)))
+
 (defn user-exists [querier name]
   (let [query {:select [:id]
                :from [:users]
