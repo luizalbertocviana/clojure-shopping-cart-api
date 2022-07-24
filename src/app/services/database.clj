@@ -19,8 +19,13 @@
 
 (defmethod ig/init-key ::transactor
   [_ {:keys [db-connection]}]
-  (fn [sql-params]
-    (jdbc/execute! db-connection sql-params)))
+  (fn
+    ([sql-params]
+     (jdbc/execute! db-connection sql-params))
+    ([sql-params-1 sql-params-2]
+     (jdbc/with-db-transaction [tx db-connection]
+       (jdbc/execute! tx sql-params-1)
+       (jdbc/execute! tx sql-params-2)))))
 
 (defmethod ig/init-key ::migrations
   [_ config]
