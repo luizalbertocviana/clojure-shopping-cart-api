@@ -1,6 +1,10 @@
 (ns app.utils
   (:require [honey.sql :as sql]))
 
+(defn product-not-found-response [name]
+  {:status 404
+   :body (str "Product " name " does not exist")})
+
 (defn session-id->user-id [querier session-id]
   (let [query {:select [:user-id]
                :from [:sessions]
@@ -9,6 +13,17 @@
     (-> result
         (nth 0)
         :user_id)))
+
+(defn product-exists [querier name]
+  (let [query {:select [:id]
+               :from [:inventory]
+               :where [:= :name name]}
+        result (querier (sql/format query))]
+    (if (= 1 (count result))
+      (-> result
+          (nth 0)
+          :id)
+      nil)))
 
 (defn user-exists [querier name]
   (let [query {:select [:id]
