@@ -9,16 +9,15 @@
 
 (defmethod ig/init-key ::cart
   [_ {:keys [active-session-middleware
-             cart-entry-add-handler]}]
+             cart-entry-add-handler
+             clean-cart-handler]}]
   ["/cart"
    {:middleware [active-session-middleware]}
    [""
     {:get {:handler (fn [_]
                       {:status 200
                        :body "hello from GET /cart"})}
-     :delete {:handler (fn [_]
-                         {:status 200
-                          :body "hello from DELETE /cart"})}}]
+     :delete {:handler clean-cart-handler}}]
    ["/add"
     {:put {:handler cart-entry-add-handler}}]
    ["/remove"

@@ -14,6 +14,13 @@
     {:status 200
      :body (str "An amount of " amount " of product " product-id " has been added to cart of user " user-id)}))
 
+(defn clean-cart [transactor user-id]
+  (let [deletion {:delete-from :cart-entries
+                  :where [:= :user-id user-id]}]
+    (transactor (sql/format deletion))
+    {:status 200
+     :body (str "Cart of user " user-id " has been cleaned")}))
+
 (defn reserved-product-amount [querier user-id product-id]
   (let [query {:select [:amount]
                :from [:cart-entries]
@@ -55,3 +62,11 @@
           session-id (UUID/fromString (:session body-params))
           user-id (utils/session-id->user-id querier session-id)]
       (attempt-to-add-product-to-cart transactor querier user-id product-name amount))))
+
+(defmethod ig/init-key ::clean
+  [_ {:keys [transactor querier]}]
+  (fn [req]
+    (let [body-params (:body-params req)
+          session-id (UUID/fromString (:session body-params))
+          user-id (utils/session-id->user-id querier session-id)]
+      (clean-cart transactor user-id))))
