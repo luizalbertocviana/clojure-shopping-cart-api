@@ -74,6 +74,12 @@
 
    put /remove
 
+   {
+       "product": "carrot",
+       "amount": 12,
+       "session": "bd2529af-48e2-43a9-8513-45a860296962"
+   }
+
 ** Discount endpoints
 
    template /discounts
