@@ -49,9 +49,11 @@
                :where [:and [:= :user-id user-id]
                             [:= :product-id product-id]]}
         result (querier (sql/format query))]
-    (-> result
-        (nth 0)
-        :amount)))
+    (if (= 1 (count result))
+      (-> result
+          (nth 0)
+          :amount)
+      0)))
 
 (defn attempt-to-add-product-to-cart [transactor querier user-id product-name requested-amount]
   (let [product-id (utils/product-exists querier product-name)]
