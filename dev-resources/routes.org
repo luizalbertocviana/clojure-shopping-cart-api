@@ -48,6 +48,10 @@
 
     delete
 
+    {
+        "session": "8346d188-e077-41f7-b8dc-df7994308603"
+    }
+
 *** as json
 
     get
