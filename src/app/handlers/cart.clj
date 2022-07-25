@@ -14,6 +14,28 @@
     {:status 200
      :body (str "An amount of " amount " of product " product-id " has been added to cart of user " user-id)}))
 
+(defn remove-product-entry-from-cart [transactor user-id product-id]
+  (let [deletion {:delete-from :cart-entries
+                  :where [:and [:= :user-id user-id]
+                               [:= :product-id product-id]]}]
+    (transactor (sql/format deletion))
+    {:status 200
+     :body (str "Product " product-id " has been removed from cart of user " user-id)}))
+
+(defn remove-product-amount-from-cart [transactor user-id product-id amount]
+  (let [update {:update :cart-entries
+                :set {:amount [:- :amount amount]}
+                :where [:and [:= :user-id user-id]
+                             [:= :product-id product-id]]}]
+    (transactor (sql/format update))
+    {:status 200
+     :body (str "An amount of "
+                amount
+                " of product "
+                product-id
+                " has been removed from cart of user "
+                user-id)}))
+
 (defn clean-cart [transactor user-id]
   (let [deletion {:delete-from :cart-entries
                   :where [:= :user-id user-id]}]
@@ -70,3 +92,52 @@
           session-id (UUID/fromString (:session body-params))
           user-id (utils/session-id->user-id querier session-id)]
       (clean-cart transactor user-id))))
+
+(defn attempt-to-remove-product-present-in-cart [transactor querier user-id product-id requested-amount]
+  (let [reserved-product-amount (reserved-product-amount querier user-id product-id)]
+    (cond
+      (not (pos? requested-amount))
+      (utils/non-positive-amount-response requested-amount)
+      (not (<= requested-amount reserved-product-amount))
+      {:status 409
+       :body (str "Product "
+                  product-id
+                  " reserved amount "
+                  reserved-product-amount
+                  " is lower than amount requested for removal "
+                  requested-amount)}
+      (= reserved-product-amount requested-amount)
+      (remove-product-entry-from-cart transactor user-id product-id)
+      :else
+      (remove-product-amount-from-cart transactor user-id product-id requested-amount))))
+
+(defn attempt-to-remove-existing-product-from-cart [transactor querier user-id product-id requested-amount]
+  (let [product-is-in-user-cart-query {:select [[[:count :*]]]
+                                       :from [:cart-entries]
+                                       :where [:and [:= :user-id user-id]
+                                                    [:= :product-id product-id]]}
+        product-is-in-user-cart-result (querier (sql/format product-is-in-user-cart-query))
+        product-is-in-user-cart (-> product-is-in-user-cart-result
+                                    (nth 0)
+                                    :count
+                                    (= 1))]
+    (if product-is-in-user-cart
+      (attempt-to-remove-product-present-in-cart transactor querier user-id product-id requested-amount)
+      {:status 409
+       :body (str "Product " product-id " is not present in cart of user " user-id)})))
+
+(defn attempt-to-remove-product-from-cart [transactor querier user-id product-name requested-amount]
+  (let [product-id (utils/product-exists querier product-name)]
+    (if product-id
+      (attempt-to-remove-existing-product-from-cart transactor querier user-id product-id requested-amount)
+      (utils/product-not-found-response product-name))))
+
+(defmethod ig/init-key ::remove
+  [_ {:keys [transactor querier]}]
+  (fn [req]
+    (let [body-params (:body-params req)
+          product-name (:product body-params)
+          amount (:amount body-params)
+          session-id (UUID/fromString (:session body-params))
+          user-id (utils/session-id->user-id querier session-id)]
+      (attempt-to-remove-product-from-cart transactor querier user-id product-name amount))))
