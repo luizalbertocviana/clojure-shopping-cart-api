@@ -64,6 +64,10 @@
 
    get /totals
 
+   {
+       "session": "3bb79c0f-a28e-4ae5-bc12-78f56cecaf58"
+   }
+
 *** add
 
    put /add

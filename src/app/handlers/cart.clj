@@ -55,6 +55,17 @@
           :amount)
       0)))
 
+(defn user-applied-coupon [querier user-id]
+  (let [query {:select [:discount :expires-on]
+               :from [:discounts :applied-discounts]
+               :where [:and [:= :discounts.id :discount-id]
+                            [:= :user-id user-id]]}
+        result (querier (sql/format query))]
+    (nth result 0 nil)))
+
+(defn calculate-total [subtotal coupon]
+  (* subtotal (- 1.0 (:discount coupon))))
+
 (defn attempt-to-add-product-to-cart [transactor querier user-id product-name requested-amount]
   (let [product-id (utils/product-exists querier product-name)]
     (if product-id
@@ -153,16 +164,11 @@
                     :where [:and [:= :inventory.id :cart-entries.product-id]
                                  [:= :user-id user-id]]}
         cart-result (querier (sql/format cart-query))
-        coupon-query {:select [:discount :expires-on]
-                      :from [:discounts :applied-discounts]
-                      :where [:and [:= :discounts.id :discount-id]
-                                   [:= :user-id user-id]]}
-        coupon-result (querier (sql/format coupon-query))
-        coupon (nth coupon-result 0 nil)
+        coupon (user-applied-coupon querier user-id)
         subtotal (->> cart-result
                       (map :entry_price)
                       (apply +))
-        total (* subtotal (- 1.0 (:discount coupon)))
+        total (calculate-total subtotal coupon)
         result {:entries cart-result
                 :subtotal subtotal
                 :coupon coupon
@@ -177,3 +183,29 @@
           session-id (UUID/fromString (:session body-params))
           user-id (utils/session-id->user-id querier session-id)]
       (show-user-cart querier user-id))))
+
+(defn show-user-cart-totals [querier user-id]
+  (let [subtotal-query {:select [[[:sum [:* :cart-entries.amount :price]]]]
+                        :from [:cart-entries :inventory]
+                        :where [:and [:= :inventory.id :product-id]
+                                     [:= :user-id user-id]]}
+        subtotal-result (querier (sql/format subtotal-query))
+        subtotal (-> subtotal-result
+                     (nth 0)
+                     :sum
+                     (or 0.0))
+        coupon (user-applied-coupon querier user-id)
+        total (calculate-total subtotal coupon)
+        result {:subtotal subtotal
+                :coupon coupon
+                :total total}]
+    {:status 200
+     :body result}))
+
+(defmethod ig/init-key ::totals
+  [_ {:keys [querier]}]
+  (fn [req]
+    (let [body-params (:body-params req)
+          session-id (UUID/fromString (:session body-params))
+          user-id (utils/session-id->user-id querier session-id)]
+      (show-user-cart-totals querier user-id))))
