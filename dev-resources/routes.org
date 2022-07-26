@@ -56,6 +56,10 @@
 
     get
 
+    {
+        "session": "b94a63ca-c0e5-4f79-a3ec-93f8c3bc473b"
+    }
+
 *** totals
 
    get /totals

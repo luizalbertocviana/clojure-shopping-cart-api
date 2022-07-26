@@ -143,3 +143,37 @@
           session-id (UUID/fromString (:session body-params))
           user-id (utils/session-id->user-id querier session-id)]
       (attempt-to-remove-product-from-cart transactor querier user-id product-name amount))))
+
+(defn show-user-cart [querier user-id]
+  (let [cart-query {:select [:name
+                             :cart-entries.amount
+                             [:price :unit-price]
+                             [[:* :cart-entries.amount :price] :entry-price]]
+                    :from [:cart-entries :inventory]
+                    :where [:and [:= :inventory.id :cart-entries.product-id]
+                                 [:= :user-id user-id]]}
+        cart-result (querier (sql/format cart-query))
+        coupon-query {:select [:discount :expires-on]
+                      :from [:discounts :applied-discounts]
+                      :where [:and [:= :discounts.id :discount-id]
+                                   [:= :user-id user-id]]}
+        coupon-result (querier (sql/format coupon-query))
+        coupon (nth coupon-result 0 nil)
+        subtotal (->> cart-result
+                      (map :entry_price)
+                      (apply +))
+        total (* subtotal (- 1.0 (:discount coupon)))
+        result {:entries cart-result
+                :subtotal subtotal
+                :coupon coupon
+                :total total}]
+    {:status 200
+     :body result}))
+
+(defmethod ig/init-key ::get
+  [_ {:keys [querier]}]
+  (fn [req]
+    (let [body-params (:body-params req)
+          session-id (UUID/fromString (:session body-params))
+          user-id (utils/session-id->user-id querier session-id)]
+      (show-user-cart querier user-id))))
