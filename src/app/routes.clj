@@ -12,7 +12,8 @@
              cart-entry-add-handler
              cart-entry-remove-handler
              clean-cart-handler
-             get-cart-handler]}]
+             get-cart-handler
+             cart-totals-handler]}]
   ["/cart"
    {:middleware [active-session-middleware]}
    [""
@@ -23,9 +24,7 @@
    ["/remove"
     {:put {:handler cart-entry-remove-handler}}]
    ["/totals"
-    {:get {:handler (fn [_]
-                      {:status 200
-                       :body "hello from /cart/totals"})}}]])
+    {:get {:handler cart-totals-handler}}]])
 
 (defmethod ig/init-key ::discounts
   [_ {:keys [active-session-middleware
