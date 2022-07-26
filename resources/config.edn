@@ -45,6 +45,7 @@
  :app.handlers.cart/add #ref [:app.services.database/components]
  :app.handlers.cart/remove #ref [:app.services.database/components]
  :app.handlers.cart/clean #ref [:app.services.database/components]
+ :app.handlers.cart/get {:querier #ig/ref :app.services.database/querier}
 
  :app.core/main-handler {:user-routes #ig/ref :app.routes/user
                          :admin-routes #ig/ref :app.routes/admin
@@ -60,7 +61,8 @@
  :app.routes/cart {:active-session-middleware #ig/ref :app.middleware/active-session
                    :cart-entry-add-handler #ig/ref :app.handlers.cart/add
                    :cart-entry-remove-handler #ig/ref :app.handlers.cart/remove
-                   :clean-cart-handler #ig/ref :app.handlers.cart/clean}
+                   :clean-cart-handler #ig/ref :app.handlers.cart/clean
+                   :get-cart-handler #ig/ref :app.handlers.cart/get}
  :app.routes/discounts {:active-session-middleware #ig/ref :app.middleware/active-session
                         :admin-session-middleware #ig/ref :app.middleware/admin-session
                         :post-handler #ig/ref :app.handlers.discounts/post

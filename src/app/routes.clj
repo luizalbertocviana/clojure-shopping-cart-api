@@ -11,13 +11,12 @@
   [_ {:keys [active-session-middleware
              cart-entry-add-handler
              cart-entry-remove-handler
-             clean-cart-handler]}]
+             clean-cart-handler
+             get-cart-handler]}]
   ["/cart"
    {:middleware [active-session-middleware]}
    [""
-    {:get {:handler (fn [_]
-                      {:status 200
-                       :body "hello from GET /cart"})}
+    {:get {:handler get-cart-handler}
      :delete {:handler clean-cart-handler}}]
    ["/add"
     {:put {:handler cart-entry-add-handler}}]
