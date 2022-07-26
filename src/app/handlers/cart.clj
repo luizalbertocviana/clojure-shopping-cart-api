@@ -55,6 +55,17 @@
           :amount)
       0)))
 
+(defn user-applied-coupon [querier user-id]
+  (let [query {:select [:discount :expires-on]
+               :from [:discounts :applied-discounts]
+               :where [:and [:= :discounts.id :discount-id]
+                            [:= :user-id user-id]]}
+        result (querier (sql/format query))]
+    (nth result 0 nil)))
+
+(defn calculate-total [subtotal coupon]
+  (* subtotal (- 1.0 (:discount coupon))))
+
 (defn attempt-to-add-product-to-cart [transactor querier user-id product-name requested-amount]
   (let [product-id (utils/product-exists querier product-name)]
     (if product-id
@@ -153,16 +164,11 @@
                     :where [:and [:= :inventory.id :cart-entries.product-id]
                                  [:= :user-id user-id]]}
         cart-result (querier (sql/format cart-query))
-        coupon-query {:select [:discount :expires-on]
-                      :from [:discounts :applied-discounts]
-                      :where [:and [:= :discounts.id :discount-id]
-                                   [:= :user-id user-id]]}
-        coupon-result (querier (sql/format coupon-query))
-        coupon (nth coupon-result 0 nil)
+        coupon (user-applied-coupon querier user-id)
         subtotal (->> cart-result
                       (map :entry_price)
                       (apply +))
-        total (* subtotal (- 1.0 (:discount coupon)))
+        total (calculate-total subtotal coupon)
         result {:entries cart-result
                 :subtotal subtotal
                 :coupon coupon
