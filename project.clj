@@ -18,5 +18,7 @@
                  [com.github.seancorfield/honeysql "2.2.891"]]
   :main ^:skip-aot app.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all
+  :profiles {:test {:dependencies [[clj-http "3.12.3"]
+                                   [org.clojure/data.json "2.4.0"]]}
+             :uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})
