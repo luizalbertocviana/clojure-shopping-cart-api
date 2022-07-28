@@ -35,11 +35,19 @@
 (defn create-user [user-name]
   (post-request "/user/create" {:name user-name}))
 
+(defn create-users [& users]
+  (->> users
+       (map #(create-user %))
+       doall))
+
 (defn login-user [user-name]
   (post-request "/user/login" {:name user-name}))
 
 (defn logout-user [session-id]
   (post-request "/user/logout" {:session session-id}))
+
+(defn promote-to-admin [user-name session-id]
+  (post-request "/admin" {:user user-name :session session-id}))
 
 (defn get-session-id [login-response]
   (-> login-response
@@ -47,6 +55,14 @@
       json/read-str
       (get "session")
       UUID/fromString))
+
+(defn create-first-admin-user [user-name]
+  (let [_user-creation-response (create-user user-name)
+        user-login-response (login-user user-name)
+        session-id (get-session-id user-login-response)
+        admin-promotion-response (promote-to-admin user-name session-id)]
+    {:session-id session-id
+     :response admin-promotion-response}))
 
 (t/deftest new-user-creation
   (t/testing "It is possible to create a new user"
@@ -99,6 +115,77 @@
       (t/is (= 200 (:status user-logout-response)))
       (t/is (= (str "Session " session-id " finished") (:body user-logout-response))))))
 
-(t/deftest a-test
-  (t/testing "FIXME, I don't fail anymore."
-    (t/is (= 1 1))))
+(t/deftest finished-session-logout
+  (t/testing "An already finished session cannot be finished a second time"
+    (let [user-name "alice"
+          _user-creation-response (create-user user-name)
+          user-login-response (login-user user-name)
+          session-id (get-session-id user-login-response)
+          _user-logout-response (logout-user session-id)
+          second-logout-response (logout-user session-id)]
+      (t/is (= 400 (:status second-logout-response)))
+      (t/is (= (str "Session " session-id " is not active")
+               (:body second-logout-response))))))
+
+(t/deftest nonexistent-session-logout
+  (t/testing "A nonexistent session cannot be finished"
+    (let [random-session-id (UUID/randomUUID)
+          logout-response (logout-user random-session-id)]
+      (t/is (= 404 (:status logout-response)))
+      (t/is (= (str "Session " random-session-id " does not exist")
+               (:body logout-response))))))
+
+(t/deftest first-admin-promotion
+  (t/testing "When there are no admins, the first user who promotes themselves to admin will succeed in doing so"
+    (let [user-name "alice"
+          admin-promotion (create-first-admin-user user-name)]
+      (t/is (= 200 (:status (:response admin-promotion))))
+      (t/is (= (str "User " user-name " has been promoted to admin")
+               (:body (:response admin-promotion)))))))
+
+(t/deftest regular-admin-promotion
+  (t/testing "An admin user is able to promote a non-admin user to admin"
+    (let [user-a "alice"
+          user-b "bob"
+          first-admin-promotion (create-first-admin-user user-a)
+          _users-creation (create-user user-b)
+          user-b-promotion-response (promote-to-admin user-b (:session-id first-admin-promotion))]
+      (t/is (= 200 (:status user-b-promotion-response)))
+      (t/is (= (str "User " user-b " has been promoted to admin")
+               (:body user-b-promotion-response))))))
+
+(t/deftest failed-first-admin-promotion
+  (t/testing "A non-admin user cannot promote another user to be the first admin"
+    (let [user-a "alice"
+          user-b "bob"
+          _users-creation (create-users user-a user-b)
+          user-login-response (login-user user-a)
+          session-id (get-session-id user-login-response)
+          user-b-promotion-response (promote-to-admin user-b session-id)]
+      (t/is (= 403 (:status user-b-promotion-response)))
+      (t/is (= (str "Session " session-id " does not belong to user " user-b)
+               (:body user-b-promotion-response))))))
+
+(t/deftest failed-admin-promotion
+  (t/testing "A non-admin user cannot promote another user to admin after first admin has been created"
+    (let [user-a "alice"
+          user-b "bob"
+          user-c "charles"
+          _first-admin-promotion (create-first-admin-user user-a)
+          _users-creation (create-users user-b user-c)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          second-admin-promotion-response (promote-to-admin user-c user-b-session-id)]
+      (t/is (= 403 (:status second-admin-promotion-response)))
+      (t/is (= (str "Session " user-b-session-id " does not belong to an admin user")
+               (:body second-admin-promotion-response))))))
+
+(t/deftest nonexistent-user-admin-promotion
+  (t/testing "A nonexistent user cannot be promoted to admin"
+    (let [user-a "alice"
+          user-b "bob"
+          admin-promotion (create-first-admin-user user-a)
+          second-admin-promotion-response (promote-to-admin user-b (:session-id admin-promotion))]
+      (t/is (= 404 (:status second-admin-promotion-response)))
+      (t/is (= (str "User " user-b " does not exist")
+               (:body second-admin-promotion-response))))))
