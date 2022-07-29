@@ -49,6 +49,12 @@
 (defn promote-to-admin [user-name session-id]
   (post-request "/admin" {:user user-name :session session-id}))
 
+(defn create-coupon [coupon-name amount discount session-id]
+  (post-request "/discounts" {:name coupon-name
+                              :amount amount
+                              :discount discount
+                              :session session-id}))
+
 (defn get-session-id [login-response]
   (-> login-response
       :body
@@ -189,3 +195,54 @@
       (t/is (= 404 (:status second-admin-promotion-response)))
       (t/is (= (str "User " user-b " does not exist")
                (:body second-admin-promotion-response))))))
+
+(t/deftest new-coupon-registration
+  (t/testing "An admin user is able to successfully register a new discount coupon"
+    (let [user-a "alice"
+          coupon-name "coupon-a"
+          admin-promotion (create-first-admin-user user-a)
+          coupon-creation-response (create-coupon coupon-name 1000 0.10 (:session-id admin-promotion))]
+      (t/is (= 201 (:status coupon-creation-response)))
+      (t/is (= (str "Discount coupon " coupon-name " created")
+               (:body coupon-creation-response))))))
+
+(t/deftest non-admin-coupon-registration
+  (t/testing "A non-admin user is not able to register a new discount coupon"
+    (let [user-a "alice"
+          _user-creation (create-user user-a)
+          login-response (login-user user-a)
+          session-id (get-session-id login-response)
+          coupon-creation-response (create-coupon "coupon-a" 1000 0.10 session-id)]
+      (t/is (= 403 (:status coupon-creation-response)))
+      (t/is (= (str "Session " session-id " does not belong to an admin user")
+               (:body coupon-creation-response))))))
+
+(t/deftest existing-coupon-registration
+  (t/testing "A discount coupon cannot be registered with a coupon name already in use"
+    (let [user-a "alice"
+          coupon-name "coupon-a"
+          admin-promotion (create-first-admin-user user-a)
+          coupon-creator #(create-coupon coupon-name 1000 0.10 (:session-id admin-promotion))
+          _coupon-creation-response (coupon-creator)
+          existing-coupon-creation-response (coupon-creator)]
+      (t/is (= 409 (:status existing-coupon-creation-response)))
+      (t/is (= (str "Discount coupon " coupon-name " is already registered")
+               (:body existing-coupon-creation-response))))))
+
+(t/deftest non-positive-amount-coupo-registration
+  (t/testing "A discount coupon cannot be registered with a non-positive amount"
+    (let [user-a "alice"
+          coupon-name "coupon-a"
+          admin-promotion (create-first-admin-user user-a)]
+      (t/testing "zero amount is invalid"
+        (let [zero-amount 0
+              coupon-creation-response (create-coupon coupon-name zero-amount 0.10 (:session-id admin-promotion))]
+          (t/is (= 400 (:status coupon-creation-response)))
+          (t/is (= (str "Amount must be positive. Amount sent was " zero-amount)
+                   (:body coupon-creation-response)))))
+      (t/testing "negative amount"
+        (let [negative-amount -12
+              coupon-creation-response (create-coupon coupon-name negative-amount 0.10 (:session-id admin-promotion))]
+          (t/is (= 400 (:status coupon-creation-response)))
+          (t/is (= (str "Amount must be positive. Amount sent was " negative-amount)
+                   (:body coupon-creation-response))))))))
