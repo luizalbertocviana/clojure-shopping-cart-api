@@ -72,6 +72,19 @@
       (get "session")
       UUID/fromString))
 
+(defn get-coupon-id [coupon-creation-response]
+  (-> coupon-creation-response
+      :body
+      json/read-str
+      (get "id")
+      UUID/fromString))
+
+(defn get-user-id [user-creation-response]
+  (-> user-creation-response
+      :body
+      json/read-str
+      (get "id")))
+
 (defn create-first-admin-user [user-name]
   (let [_user-creation-response (create-user user-name)
         user-login-response (login-user user-name)
