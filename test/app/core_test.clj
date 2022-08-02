@@ -269,7 +269,7 @@
           (t/is (= 400 (:status coupon-creation-response)))
           (t/is (= (str "Amount must be positive. Amount sent was " zero-amount)
                    (:body coupon-creation-response)))))
-      (t/testing "negative amount"
+      (t/testing "negative amount is invalid"
         (let [negative-amount -12
               coupon-creation-response (create-coupon coupon-name negative-amount 0.10 (:session-id admin-promotion))]
           (t/is (= 400 (:status coupon-creation-response)))
