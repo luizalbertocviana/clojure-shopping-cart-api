@@ -25,10 +25,11 @@
       (if (not user-id)
         (let [insertion {:insert-into :users
                          :columns [:name]
-                         :values [[name]]}]
-          (transactor (sql/format insertion))
+                         :values [[name]]}
+              result (transactor (sql/format insertion))]
           {:status 201
-           :body (str "User " name " created successfully")})
+           :body {:message (str "User " name " created successfully")
+                  :id (:id result)}})
         {:status 409
          :body (str "User " name " already exists; id " user-id)}))))
 
