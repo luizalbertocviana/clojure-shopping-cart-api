@@ -56,6 +56,14 @@
                                :discount discount
                                :session session-id}))
 
+(defn apply-coupon [coupon-name session-id]
+  (request :put "/discounts" {:name coupon-name :session session-id}))
+
+(defn register-product [name price amount session-id]
+  (request :post "/inventory" {:name name
+                               :price price
+                               :amount amount
+                               :session session-id}))
 
 (defn get-session-id [login-response]
   (-> login-response
