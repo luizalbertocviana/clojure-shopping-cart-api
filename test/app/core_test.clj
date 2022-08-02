@@ -99,7 +99,10 @@
           user-creation-response (create-user user-name)]
       (t/is (= 201 (:status user-creation-response)))
       (t/is (= (str "User " user-name " created successfully")
-               (:body user-creation-response))))))
+               (-> user-creation-response
+                   :body
+                   json/read-str
+                   (get "message")))))))
 
 (t/deftest existent-user-creation
   (t/testing "It is not possible to create an already existent user"
@@ -227,7 +230,10 @@
           coupon-creation-response (create-coupon coupon-name 1000 0.10 (:session-id admin-promotion))]
       (t/is (= 201 (:status coupon-creation-response)))
       (t/is (= (str "Discount coupon " coupon-name " created")
-               (:body coupon-creation-response))))))
+               (-> coupon-creation-response
+                   :body
+                   json/read-str
+                   (get "message")))))))
 
 (t/deftest non-admin-coupon-registration
   (t/testing "A non-admin user is not able to register a new discount coupon"
