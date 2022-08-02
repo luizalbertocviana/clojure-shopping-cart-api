@@ -275,3 +275,95 @@
           (t/is (= 400 (:status coupon-creation-response)))
           (t/is (= (str "Amount must be positive. Amount sent was " negative-amount)
                    (:body coupon-creation-response))))))))
+
+(t/deftest valid-coupon-application
+  (t/testing "A valid discount coupon can be applied to a user cart"
+    (let [user-a "alice"
+          user-b "bob"
+          coupon-name "coupon-a"
+          admin-promotion (create-first-admin-user user-a)
+          coupon-creation-response (create-coupon coupon-name 100 0.10 (:session-id admin-promotion))
+          coupon-id (get-coupon-id coupon-creation-response)
+          user-b-creation-response (create-user user-b)
+          user-b-id (get-user-id user-b-creation-response)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          coupon-application-response (apply-coupon coupon-name user-b-session-id)]
+      (t/is (= 200 (:status coupon-application-response)))
+      (t/is (= (str "Discount coupon " coupon-id " applied to user " user-b-id)
+               (:body coupon-application-response))))))
+
+(t/deftest nonexistent-coupon-application
+  (t/testing "A nonexistent discount coupon cannot be applied to a user cart"
+    (let [user-a "alice"
+          _user-creation-response (create-user user-a)
+          user-login-response (login-user user-a)
+          session-id (get-session-id user-login-response)
+          coupon-name "coupon-a"
+          coupon-application-response (apply-coupon coupon-name session-id)]
+      (t/is (= 404 (:status coupon-application-response)))
+      (t/is (= (str "Discount coupon " coupon-name " does not exist")
+               (:body coupon-application-response))))))
+
+(t/deftest expired-coupon-application
+  (t/testing "An expired discount coupon cannot be applied to a user cart"
+    (let [user-a "alice"
+          user-b "bob"
+          user-c "charles"
+          coupon-name "coupon-a"
+          admin-promotion (create-first-admin-user user-a)
+          coupon-creation-response (create-coupon coupon-name 1 0.10 (:session-id admin-promotion))
+          coupon-id (get-coupon-id coupon-creation-response)
+          _users-creation-response (create-users user-b user-c)
+          user-b-login-response (login-user user-b)
+          user-c-login-response (login-user user-c)
+          user-b-session-id (get-session-id user-b-login-response)
+          user-c-session-id (get-session-id user-c-login-response)
+          _first-coupon-application-response (apply-coupon coupon-name user-b-session-id)
+          second-coupon-application-response (apply-coupon coupon-name user-c-session-id)]
+      (t/is (= 409 (:status second-coupon-application-response)))
+      (t/is (= (str "Discount coupon " coupon-id " has expired")
+               (:body second-coupon-application-response))))))
+
+(t/deftest new-product-registration
+  (t/testing "An admin user is able to register a new product into inventory"
+    (let [user-a "alice"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          product-registration-response (register-product product-name 3.99 20 (:session-id admin-promotion))]
+      (t/is (= 201 (:status product-registration-response)))
+      (t/is (= (str "Product " product-name " registered into inventory")
+               (:body product-registration-response))))))
+
+(t/deftest existent-product-registration
+  (t/testing "An already existent product cannot be registered again"
+    (let [user-a "alice"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          product-registrator #(register-product product-name 3.99 20 (:session-id admin-promotion))
+          _first-product-registration-response (product-registrator)
+          second-product-registration-response (product-registrator)]
+      (t/is (= 409 (:status second-product-registration-response)))
+      (t/is (= (str "Product " product-name " is already registered")
+               (:body second-product-registration-response))))))
+
+(t/deftest non-admin-product-registration
+  (t/testing "A non-admin user is not able to register a product into inventory"
+    (let [user-a "alice"
+          _user-creation-response (create-user user-a)
+          login-response (login-user user-a)
+          session-id (get-session-id login-response)
+          product-registration-response (register-product "carrot" 3.99 20 session-id)]
+      (t/is (= 403 (:status product-registration-response)))
+      (t/is (= (str "Session " session-id " does not belong to an admin user")
+               (:body product-registration-response))))))
+
+(t/deftest expired-admin-session-product-registration
+  (t/testing "An expired admin session is not able to register a product into inventory"
+    (let [user-a "alice"
+          admin-promotion (create-first-admin-user user-a)
+          _admin-logout (logout-user (:session-id admin-promotion))
+          product-registration-response (register-product "carrot" 3.99 20 (:session-id admin-promotion))]
+      (t/is (= 401 (:status product-registration-response)))
+      (t/is (= (str "Session " (:session-id admin-promotion) " is not active")
+               (:body product-registration-response))))))
