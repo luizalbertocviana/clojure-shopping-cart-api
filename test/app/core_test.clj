@@ -26,14 +26,15 @@
 
 (def route-prefix  "http://localhost:3000/api")
 
-(defn post-request [route-suffix body]
-  (http-client/post (str route-prefix route-suffix)
-                    {:content-type :json
-                     :body (json/write-str body)
-                     :throw-exceptions false}))
+(defn request [method route-suffix body]
+  (http-client/request {:method method
+                        :url (str route-prefix route-suffix)
+                        :content-type :json
+                        :body (json/write-str body)
+                        :throw-exceptions false}))
 
 (defn create-user [user-name]
-  (post-request "/user/create" {:name user-name}))
+  (request :post "/user/create" {:name user-name}))
 
 (defn create-users [& users]
   (->> users
@@ -41,19 +42,20 @@
        doall))
 
 (defn login-user [user-name]
-  (post-request "/user/login" {:name user-name}))
+  (request :post "/user/login" {:name user-name}))
 
 (defn logout-user [session-id]
-  (post-request "/user/logout" {:session session-id}))
+  (request :post "/user/logout" {:session session-id}))
 
 (defn promote-to-admin [user-name session-id]
-  (post-request "/admin" {:user user-name :session session-id}))
+  (request :post "/admin" {:user user-name :session session-id}))
 
 (defn create-coupon [coupon-name amount discount session-id]
-  (post-request "/discounts" {:name coupon-name
-                              :amount amount
-                              :discount discount
-                              :session session-id}))
+  (request :post "/discounts" {:name coupon-name
+                               :amount amount
+                               :discount discount
+                               :session session-id}))
+
 
 (defn get-session-id [login-response]
   (-> login-response
