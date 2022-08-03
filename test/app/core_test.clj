@@ -422,3 +422,54 @@
       (t/is (= 401 (:status product-deletion-response)))
       (t/is (= (str "Session " (:session-id admin-promotion) " is not active")
                (:body product-deletion-response))))))
+
+(t/deftest existent-product-price-change
+  (t/testing "An admin user is able to change the price of an existing product"
+    (let [user-a "alice"
+          product-name "carrot"
+          new-product-price 4.99
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          product-price-change-response (change-product-price product-name new-product-price (:session-id admin-promotion))]
+      (t/is (= 200 (:status product-price-change-response)))
+      (t/is (= (str "Product " product-name " had its price updated to " new-product-price)
+               (:body product-price-change-response))))))
+
+(t/deftest nonexistent-product-price-change
+  (t/testing "An admin user is unable to change the price of a nonexisting product"
+    (let [user-a "alice"
+          product-name "carrot"
+          new-product-price 4.99
+          admin-promotion (create-first-admin-user user-a)
+          product-price-change-response (change-product-price product-name new-product-price (:session-id admin-promotion))]
+      (t/is (= 404 (:status product-price-change-response)))
+      (t/is (= (str "Product " product-name " does not exist")
+               (:body product-price-change-response))))))
+
+(t/deftest non-admin-product-price-change
+  (t/testing "A non-admin user is unable to change the price of an existing product"
+    (let [user-a "alice"
+          user-b "bob"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _user-creation-response (create-user user-b)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          _user-creation-response (create-user user-b)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          product-price-change-response (change-product-price product-name 4.99 user-b-session-id)]
+      (t/is (= 403 (:status product-price-change-response)))
+      (t/is (= (str "Session " user-b-session-id " does not belong to an admin user")
+               (:body product-price-change-response))))))
+
+(t/deftest expired-admin-session-product-price-change
+  (t/testing "An expired admin session is unable to change the price of an existing product"
+    (let [user-a "alice"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          _user-a-logout-response (logout-user (:session-id admin-promotion))
+          product-price-change-response (change-product-price product-name 4.99 (:session-id admin-promotion))]
+      (t/is (= 401 (:status product-price-change-response)))
+      (t/is (= (str "Session " (:session-id admin-promotion) " is not active")
+               (:body product-price-change-response))))))
