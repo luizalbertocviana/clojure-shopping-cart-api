@@ -67,6 +67,11 @@
 (defn delete-product [name session-id]
   (request :delete "/inventory" {:name name :session session-id}))
 
+(defn change-product-price [name new-price session-id]
+  (request :put "/inventory/price" {:name name
+                                    :price new-price
+                                    :session session-id}))
+
 (defn get-session-id [login-response]
   (-> login-response
       :body
