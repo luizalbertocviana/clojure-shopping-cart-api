@@ -369,3 +369,51 @@
       (t/is (= 401 (:status product-registration-response)))
       (t/is (= (str "Session " (:session-id admin-promotion) " is not active")
                (:body product-registration-response))))))
+
+(t/deftest existent-product-deletion
+  (t/testing "An existent product can be successfully removed from inventory"
+    (let [user-a "alice"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _product-registration-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          product-deletion-response (delete-product product-name (:session-id admin-promotion))]
+      (t/is (= 200 (:status product-deletion-response)))
+      (t/is (= (str "Product " product-name " removed from inventory")
+               (:body product-deletion-response))))))
+
+(t/deftest nonexistent-product-deletion
+  (t/testing "A nonexistent product cannot be removed from inventory"
+    (let [user-a "alice"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          product-deletion-response (delete-product product-name (:session-id admin-promotion))]
+      (t/is (= 404 (:status product-deletion-response)))
+      (t/is (= (str "Product " product-name " does not exist")
+               (:body product-deletion-response))))))
+
+(t/deftest non-admin-product-deletion
+  (t/testing "A non-admin user cannot remove a product from inventory"
+    (let [user-a "alice"
+          user-b "bob"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _user-creation-response (create-user user-b)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          _product-registration-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          product-deletion-response (delete-product product-name user-b-session-id)]
+      (t/is (= 403 (:status product-deletion-response)))
+      (t/is (= (str "Session " user-b-session-id " does not belong to an admin user")
+               (:body product-deletion-response))))))
+
+(t/deftest expired-admin-session-product-deletion
+  (t/testing "An expired admin session is not able to delete a product from inventory"
+    (let [user-a "alice"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          _admin-logout-response (logout-user (:session-id admin-promotion))
+          product-deletion-response (delete-product product-name (:session-id admin-promotion))]
+      (t/is (= 401 (:status product-deletion-response)))
+      (t/is (= (str "Session " (:session-id admin-promotion) " is not active")
+               (:body product-deletion-response))))))
