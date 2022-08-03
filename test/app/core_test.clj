@@ -15,7 +15,6 @@
 
 (defn test-system-fixture [f]
   (when (map? @core/system)
-    (reset-database-state)
     (core/stop-system))
   (core/start-system :test)
   (f)
