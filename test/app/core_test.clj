@@ -64,6 +64,9 @@
                                :amount amount
                                :session session-id}))
 
+(defn delete-product [name session-id]
+  (request :delete "/inventory" {:name name :session session-id}))
+
 (defn get-session-id [login-response]
   (-> login-response
       :body
