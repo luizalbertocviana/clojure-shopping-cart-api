@@ -121,17 +121,17 @@
                    json/read-str
                    (get "message")))))))
 
-(t/deftest existent-user-creation
-  (t/testing "It is not possible to create an already existent user"
+(t/deftest existing-user-creation
+  (t/testing "It is not possible to create an already existing user"
     (let [user-name "alice"
           _user-creation-response (create-user user-name)
-          existent-user-creation-response (create-user user-name)]
-      (t/is (= 409 (:status existent-user-creation-response)))
+          existing-user-creation-response (create-user user-name)]
+      (t/is (= 409 (:status existing-user-creation-response)))
       (t/is (= (str "User " user-name " already exists; id 1")
-               (:body existent-user-creation-response))))))
+               (:body existing-user-creation-response))))))
 
-(t/deftest existent-user-login
-  (t/testing "An existent user is able to successfully login into the system"
+(t/deftest existing-user-login
+  (t/testing "An existing user is able to successfully login into the system"
     (let [user-name "alice"
           _user-creation-response (create-user user-name)
           user-login-response (login-user user-name)]
@@ -352,8 +352,8 @@
       (t/is (= (str "Product " product-name " registered into inventory")
                (:body product-registration-response))))))
 
-(t/deftest existent-product-registration
-  (t/testing "An already existent product cannot be registered again"
+(t/deftest existing-product-registration
+  (t/testing "An already existing product cannot be registered again"
     (let [user-a "alice"
           product-name "carrot"
           admin-promotion (create-first-admin-user user-a)
@@ -385,8 +385,8 @@
       (t/is (= (str "Session " (:session-id admin-promotion) " is not active")
                (:body product-registration-response))))))
 
-(t/deftest existent-product-deletion
-  (t/testing "An existent product can be successfully removed from inventory"
+(t/deftest existing-product-deletion
+  (t/testing "An existing product can be successfully removed from inventory"
     (let [user-a "alice"
           product-name "carrot"
           admin-promotion (create-first-admin-user user-a)
@@ -433,7 +433,7 @@
       (t/is (= (str "Session " (:session-id admin-promotion) " is not active")
                (:body product-deletion-response))))))
 
-(t/deftest existent-product-price-change
+(t/deftest existing-product-price-change
   (t/testing "An admin user is able to change the price of an existing product"
     (let [user-a "alice"
           product-name "carrot"
@@ -446,7 +446,7 @@
                (:body product-price-change-response))))))
 
 (t/deftest nonexistent-product-price-change
-  (t/testing "An admin user is unable to change the price of a nonexisting product"
+  (t/testing "An admin user is unable to change the price of a nonexistent product"
     (let [user-a "alice"
           product-name "carrot"
           new-product-price 4.99
