@@ -72,6 +72,16 @@
                                     :price new-price
                                     :session session-id}))
 
+(defn increase-product-amount [name amount-to-increase session-id]
+  (request :put "/inventory/increase" {:name name
+                                       :amountToIncrease amount-to-increase
+                                       :session session-id}))
+
+(defn decrease-product-amount [name amount-to-decrease session-id]
+  (request :put "/inventory/decrease" {:name name
+                                       :amountToDecrease amount-to-decrease
+                                       :session session-id}))
+
 (defn get-session-id [login-response]
   (-> login-response
       :body
