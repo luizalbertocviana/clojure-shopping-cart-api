@@ -483,3 +483,101 @@
       (t/is (= 401 (:status product-price-change-response)))
       (t/is (= (str "Session " (:session-id admin-promotion) " is not active")
                (:body product-price-change-response))))))
+
+(t/deftest existing-product-amount-increase
+  (t/testing "An admin user is able to increase the available amount of an existing product"
+    (let [user-a "alice"
+          product-name "carrot"
+          amount-to-increase 1
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          product-amount-increase-response (increase-product-amount product-name amount-to-increase (:session-id admin-promotion))]
+      (t/is (= 200 (:status product-amount-increase-response)))
+      (t/is (= (str "Product " product-name " amount has been increased by " amount-to-increase)
+               (:body product-amount-increase-response))))))
+
+(t/deftest nonexistent-product-amount-increase
+  (t/testing "An admin user is unable to increase the available amount of a nonexistent product"
+    (let [user-a "alice"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          product-amount-increase-response (increase-product-amount product-name 2 (:session-id admin-promotion))]
+      (t/is (= 404 (:status product-amount-increase-response)))
+      (t/is (= (str "Product " product-name " does not exist")
+               (:body product-amount-increase-response))))))
+
+(t/deftest non-admin-product-amount-increase
+  (t/testing "A non-admin user is unable to increase the available amount of an existing product"
+    (let [user-a "alice"
+          user-b "bob"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _user-creation-response (create-user user-b)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          product-amount-increase-response (increase-product-amount product-name 2 user-b-session-id)]
+      (t/is (= 403 (:status product-amount-increase-response)))
+      (t/is (= (str "Session " user-b-session-id " does not belong to an admin user")
+               (:body product-amount-increase-response))))))
+
+(t/deftest expired-admin-session-product-amount-increase
+  (t/testing "An expired admin session is unable to increase the available amount of an existing product"
+    (let [user-a "alice"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          _user-a-logout-response (logout-user (:session-id admin-promotion))
+          product-amount-increase-response (increase-product-amount product-name 2 (:session-id admin-promotion))]
+      (t/is (= 401 (:status product-amount-increase-response)))
+      (t/is (= (str "Session " (:session-id admin-promotion) " is not active")
+               (:body product-amount-increase-response))))))
+
+(t/deftest existing-product-amount-decrease
+  (t/testing "An admin user is able to decrease the available amount of an existing product"
+    (let [user-a "alice"
+          product-name "carrot"
+          amount-to-decrease 1
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          product-amount-decrease-response (decrease-product-amount product-name amount-to-decrease (:session-id admin-promotion))]
+      (t/is (= 200 (:status product-amount-decrease-response)))
+      (t/is (= (str "Product " product-name " amount has been decreased by " amount-to-decrease)
+               (:body product-amount-decrease-response))))))
+
+(t/deftest nonexistent-product-amount-decrease
+  (t/testing "An admin user is unable to decrease the available amount of a nonexistent product"
+    (let [user-a "alice"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          product-amount-decrease-response (decrease-product-amount product-name 2 (:session-id admin-promotion))]
+      (t/is (= 404 (:status product-amount-decrease-response)))
+      (t/is (= (str "Product " product-name " does not exist")
+               (:body product-amount-decrease-response))))))
+
+(t/deftest non-admin-product-amount-decrease
+  (t/testing "A non-admin user is unable to decrease the available amount of an existing product"
+    (let [user-a "alice"
+          user-b "bob"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _user-creation-response (create-user user-b)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          product-amount-decrease-response (decrease-product-amount product-name 2 user-b-session-id)]
+      (t/is (= 403 (:status product-amount-decrease-response)))
+      (t/is (= (str "Session " user-b-session-id " does not belong to an admin user")
+               (:body product-amount-decrease-response))))))
+
+(t/deftest expired-admin-session-product-amount-decrease
+  (t/testing "An expired admin session is unable to decrease the available amount of an existing product"
+    (let [user-a "alice"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          _user-a-logout-response (logout-user (:session-id admin-promotion))
+          product-amount-decrease-response (decrease-product-amount product-name 2 (:session-id admin-promotion))]
+      (t/is (= 401 (:status product-amount-decrease-response)))
+      (t/is (= (str "Session " (:session-id admin-promotion) " is not active")
+               (:body product-amount-decrease-response))))))
