@@ -82,6 +82,11 @@
                                        :amountToDecrease amount-to-decrease
                                        :session session-id}))
 
+(defn add-product-to-cart [name amount session-id]
+  (request :put "/cart/add" {:product name
+                             :amount amount
+                             :session session-id}))
+
 (defn get-session-id [login-response]
   (-> login-response
       :body
@@ -91,6 +96,13 @@
 
 (defn get-coupon-id [coupon-creation-response]
   (-> coupon-creation-response
+      :body
+      json/read-str
+      (get "id")
+      UUID/fromString))
+
+(defn get-product-id [product-creation-response]
+  (-> product-creation-response
       :body
       json/read-str
       (get "id")
