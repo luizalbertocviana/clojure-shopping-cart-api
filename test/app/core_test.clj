@@ -596,3 +596,99 @@
       (t/is (= 401 (:status product-amount-decrease-response)))
       (t/is (= (str "Session " (:session-id admin-promotion) " is not active")
                (:body product-amount-decrease-response))))))
+
+(t/deftest existing-product-cart-add
+  (t/testing "A user is able to add an existing product to their cart"
+    (let [user-a "alice"
+          user-b "bob"
+          product-name "carrot"
+          amount-to-add-to-cart 2
+          admin-promotion (create-first-admin-user user-a)
+          product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          product-id (get-product-id product-creation-response)
+          user-creation-response (create-user user-b)
+          user-b-id (get-user-id user-creation-response)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          product-cart-add-response (add-product-to-cart product-name amount-to-add-to-cart user-b-session-id)]
+      (t/is (= 200 (:status product-cart-add-response)))
+      (t/is (= (str "An amount of "
+                    amount-to-add-to-cart
+                    " of product "
+                    product-id
+                    " has been added to cart of user "
+                    user-b-id)
+               (:body product-cart-add-response))))))
+
+(t/deftest nonexistent-product-cart-add
+  (t/testing "A user is not able to add a nonexistent product to their cart"
+    (let [user-a "alice"
+          product-name "carrot"
+          _user-creation-response (create-user user-a)
+          user-login-response (login-user user-a)
+          session-id (get-session-id user-login-response)
+          product-cart-add-response (add-product-to-cart product-name 2 session-id)]
+      (t/is (= 404 (:status product-cart-add-response)))
+      (t/is (= (str "Product " product-name " does not exist")
+               (:body product-cart-add-response))))))
+
+(t/deftest exceeding-amount-product-cart-add
+  (t/testing "A user is not able to add to their cart an amount of a certain product greater than the registered amount in inventory"
+    (let [user-a "alice"
+          user-b "bob"
+          product-name "carrot"
+          product-amount 20
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-response (register-product product-name 3.99 product-amount (:session-id admin-promotion))
+          _user-creation-response (create-user user-b)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          product-cart-add-response (add-product-to-cart product-name (inc product-amount) user-b-session-id)]
+      (t/is (= 409 (:status product-cart-add-response)))
+      (t/is (= (str "Product "
+                    product-name
+                    " available amount is "
+                    product-amount
+                    " which is lower than requested amount "
+                    (inc product-amount)
+                    " plus reserved amount 0")
+               (:body product-cart-add-response))))))
+
+(t/deftest non-positive-amount-product-cart-add
+  (t/testing "A user is not able to add to their cart a non-positive amount of a certain product"
+    (let [user-a "alice"
+          user-b "bob"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          _user-creation-response (create-user user-b)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)]
+      (t/testing "zero amount"
+        (let [zero-amount 0
+              product-cart-add-response (add-product-to-cart product-name zero-amount user-b-session-id)]
+          (t/is (= 400 (:status product-cart-add-response)))
+          (t/is (= (str "Amount must be positive. Amount sent was " zero-amount)
+                   (:body product-cart-add-response)))))
+      (t/testing "negative amount"
+        (let [negative-amount -1
+              product-cart-add-response (add-product-to-cart product-name negative-amount user-b-session-id)]
+          (t/is (= 400 (:status product-cart-add-response)))
+          (t/is (= (str "Amount must be positive. Amount sent was " negative-amount)
+                   (:body product-cart-add-response))))))))
+
+(t/deftest expired-session-product-cart-add
+  (t/testing "An expired session is not able to add a positive amount of a certain product to the corresponding cart"
+    (let [user-a "alice"
+          user-b "bob"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          _user-creation-response (create-user user-b)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          _user-b-logout-response (logout-user user-b-session-id)
+          product-cart-add-response (add-product-to-cart product-name 1 user-b-session-id)]
+      (t/is (= 401 (:status product-cart-add-response)))
+      (t/is (= (str "Session " user-b-session-id " is not active")
+               (:body product-cart-add-response))))))
