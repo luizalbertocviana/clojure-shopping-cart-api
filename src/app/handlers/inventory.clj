@@ -6,10 +6,12 @@
 (defn register-new-product [transactor name price amount]
   (let [insertion {:insert-into :inventory
                    :columns [:name :price :amount]
-                   :values [[name price amount]]}]
-    (transactor (sql/format insertion))
+                   :values [[name price amount]]
+                   :returning [:id]}
+        result (transactor (sql/format insertion))]
     {:status 201
-     :body (str "Product " name " registered into inventory")}))
+     :body {:message (str "Product " name " registered into inventory")
+            :id (:id result)}}))
 
 (defn delete-product [transactor name]
   (let [deletion {:delete-from :inventory
