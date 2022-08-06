@@ -362,7 +362,10 @@
           product-registration-response (register-product product-name 3.99 20 (:session-id admin-promotion))]
       (t/is (= 201 (:status product-registration-response)))
       (t/is (= (str "Product " product-name " registered into inventory")
-               (:body product-registration-response))))))
+               (-> product-registration-response
+                   :body
+                   json/read-str
+                   (get "message")))))))
 
 (t/deftest existing-product-registration
   (t/testing "An already existing product cannot be registered again"
