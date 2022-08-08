@@ -87,6 +87,11 @@
                              :amount amount
                              :session session-id}))
 
+(defn remove-product-from-cart [name amount session-id]
+  (request :put "/cart/remove" {:product name
+                                :amount amount
+                                :session session-id}))
+
 (defn get-session-id [login-response]
   (-> login-response
       :body
