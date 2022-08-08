@@ -697,3 +697,87 @@
       (t/is (= 401 (:status product-cart-add-response)))
       (t/is (= (str "Session " user-b-session-id " is not active")
                (:body product-cart-add-response))))))
+
+(t/deftest existing-product-cart-removal
+  (t/testing "A user is able to remove a product from their cart"
+    (let [user-a "alice"
+          user-b "bob"
+          product-name "carrot"
+          cart-adding-amount 2
+          partial-removal-amount 1
+          admin-promotion (create-first-admin-user user-a)
+          product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          product-id (get-product-id product-creation-response)
+          user-creation-response (create-user user-b)
+          user-id (get-user-id user-creation-response)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          _product-cart-add-response (add-product-to-cart product-name cart-adding-amount user-b-session-id)]
+      (t/testing "partial removal"
+        (let [product-cart-removal-response (remove-product-from-cart product-name partial-removal-amount user-b-session-id)]
+          (t/is (= 200 (:status product-cart-removal-response)))
+          (t/is (= (str "An amount of "
+                        partial-removal-amount
+                        " of product "
+                        product-id
+                        " has been removed from cart of user "
+                        user-id)
+                   (:body product-cart-removal-response)))))
+      (t/testing "complete removal"
+        (let [product-cart-removal-response (remove-product-from-cart product-name (- cart-adding-amount partial-removal-amount) user-b-session-id)]
+          (t/is (= 200 (:status product-cart-removal-response)))
+          (t/is (= (str "Product " product-id " has been removed from cart of user " user-id)
+                   (:body product-cart-removal-response))))))))
+
+(t/deftest nonexistent-product-cart-removal
+  (t/testing "A user is unable to remove a nonexistent product from their cart"
+    (let [user-a "alice"
+          product-name "carrot"
+          _user-creation-response (create-user user-a)
+          user-a-login-response (login-user user-a)
+          user-a-session-id (get-session-id user-a-login-response)
+          product-cart-removal-response (remove-product-from-cart product-name 1 user-a-session-id)]
+      (t/is (= 404 (:status product-cart-removal-response)))
+      (t/is (= (str "Product " product-name " does not exist")
+               (:body product-cart-removal-response))))))
+
+(t/deftest non-positive-amount-product-cart-removal
+  (t/testing "A user is unable to remove a non-positive amount of a certain product from their cart"
+    (let [user-a "alice"
+          user-b "bob"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          _user-creation-response (create-user user-b)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          _product-cart-add-response (add-product-to-cart product-name 2 user-b-session-id)]
+      (t/testing "zero amount"
+        (let [zero-amount 0
+              product-cart-removal-response (remove-product-from-cart product-name zero-amount user-b-session-id)]
+          (t/is (= 400 (:status product-cart-removal-response)))
+          (t/is (= (str "Amount must be positive. Amount sent was " zero-amount)
+                   (:body product-cart-removal-response)))))
+      (t/testing "negative amount"
+        (let [negative-amount -1
+              product-cart-removal-response (remove-product-from-cart product-name negative-amount user-b-session-id)]
+          (t/is (= 400 (:status product-cart-removal-response)))
+          (t/is (= (str "Amount must be positive. Amount sent was " negative-amount)
+                   (:body product-cart-removal-response))))))))
+
+(t/deftest expired-session-product-cart-removal
+  (t/testing "An expired session is unable to remove a product from the corresponding cart"
+    (let [user-a "alice"
+          user-b "bob"
+          product-name "carrot"
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-response (register-product product-name 3.99 20 (:session-id admin-promotion))
+          _user-creation-response (create-user user-b)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          _product-cart-add-response (add-product-to-cart product-name 2 user-b-session-id)
+          _user-b-logout-response (logout-user user-b-session-id)
+          product-cart-removal-response (remove-product-from-cart product-name 1 user-b-session-id)]
+      (t/is (= 401 (:status product-cart-removal-response)))
+      (t/is (= (str "Session " user-b-session-id " is not active")
+               (:body product-cart-removal-response))))))
