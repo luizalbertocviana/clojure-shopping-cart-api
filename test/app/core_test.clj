@@ -781,3 +781,47 @@
       (t/is (= 401 (:status product-cart-removal-response)))
       (t/is (= (str "Session " user-b-session-id " is not active")
                (:body product-cart-removal-response))))))
+
+(t/deftest valid-session-cart-clean
+  (t/testing "A user is able to clean their cart contents"
+    (let [user-a "alice"
+          user-b "bob"
+          product-a "apple"
+          product-b "blueberry"
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-responses (->> [product-a product-b]
+                                           (map #(register-product % 3.99 20 (:session-id admin-promotion)))
+                                           doall)
+          user-creation-response (create-user user-b)
+          user-b-id (get-user-id user-creation-response)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          _product-cart-add-responses (->> [product-a product-b]
+                                           (map #(add-product-to-cart % 2 user-b-session-id)))
+          cart-clean-response (request :delete "/cart" {:session user-b-session-id})]
+      (t/is (= 200 (:status cart-clean-response)))
+      (t/is (= (str "Cart of user " user-b-id " has been cleaned")
+               (:body cart-clean-response))))))
+
+(t/deftest expired-session-cart-clean
+  (t/testing "An expired session is not able to clean the corresponding cart contents"
+    (let [user-a "alice"
+          user-b "bob"
+          product-a "apple"
+          product-b "blueberry"
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-responses (->> [product-a product-b]
+                                           (map #(register-product % 3.99 20 (:session-id admin-promotion)))
+                                           doall)
+          _user-creation-response (create-user user-b)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          _product-cart-add-responses (->> [product-a product-b]
+                                           (map #(add-product-to-cart % 2 user-b-session-id)))
+          _user-b-logout-response (logout-user user-b-session-id)
+          cart-clean-response (request :delete "/cart" {:session user-b-session-id})]
+      (t/is (= 401 (:status cart-clean-response)))
+      (t/is (= (str "Session " user-b-session-id " is not active")
+               (:body cart-clean-response))))))
+
+
