@@ -828,4 +828,49 @@
       (t/is (= (str "Session " user-b-session-id " is not active")
                (:body cart-clean-response))))))
 
-
+(t/deftest cart-totals
+  (t/testing "A user is able to retrieve the totals of their cart"
+    (let [user-a "alice"
+          user-b "bob"
+          product-a {:name "carrot"
+                     :price 3.99M
+                     :amount-to-add 2}
+          product-b {:name "blueberry"
+                     :price 3.99M
+                     :amount-to-add 3}
+          coupon-name "coupon-a"
+          coupon-discount 0.1M
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-responses (->> [product-a product-b]
+                                           (map #(register-product (:name %)
+                                                                   (:price %)
+                                                                   20
+                                                                   (:session-id admin-promotion)))
+                                           doall)
+          _discout-coupon-creation-response (create-coupon coupon-name 10 coupon-discount (:session-id admin-promotion))
+          _user-creation-response (create-user user-b)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          _product-cart-add-responses (->> [product-a product-b]
+                                           (map #(add-product-to-cart (:name %)
+                                                                      (:amount-to-add %)
+                                                                      user-b-session-id))
+                                           doall)
+          _coupon_apply-response (apply-coupon coupon-name user-b-session-id)
+          cart-totals-response (request :get "/cart/totals" {:session user-b-session-id})
+          expected-subtotal (+ (* (:price product-a)
+                                  (:amount-to-add product-a))
+                               (* (:price product-b)
+                                  (:amount-to-add product-b)))
+          expected-total (- expected-subtotal (* expected-subtotal coupon-discount))]
+      (t/is (= 200 (:status cart-totals-response)))
+      (t/is (= (double expected-subtotal)
+               (-> cart-totals-response
+                   :body
+                   json/read-str
+                   (get "subtotal"))))
+      (t/is (= (double expected-total)
+               (-> cart-totals-response
+                   :body
+                   json/read-str
+                   (get "total")))))))
