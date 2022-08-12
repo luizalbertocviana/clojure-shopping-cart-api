@@ -874,3 +874,56 @@
                    :body
                    json/read-str
                    (get "total")))))))
+
+(t/deftest cart-contents
+  (t/testing "A user is able to retrieve their cart contents"
+    (let [user-a "alice"
+          user-b "bob"
+          product-a {:name "carrot"
+                     :price 3.99M
+                     :amount-to-add 2}
+          product-b {:name "blueberry"
+                     :price 3.99M
+                     :amount-to-add 3}
+          coupon-name "coupon-a"
+          coupon-discount 0.1M
+          admin-promotion (create-first-admin-user user-a)
+          _product-creation-responses (->> [product-a product-b]
+                                           (map #(register-product (:name %)
+                                                                   (:price %)
+                                                                   20
+                                                                   (:session-id admin-promotion)))
+                                           doall)
+          _discout-coupon-creation-response (create-coupon coupon-name 10 coupon-discount (:session-id admin-promotion))
+          _user-creation-response (create-user user-b)
+          user-b-login-response (login-user user-b)
+          user-b-session-id (get-session-id user-b-login-response)
+          _product-cart-add-responses (->> [product-a product-b]
+                                           (map #(add-product-to-cart (:name %)
+                                                                      (:amount-to-add %)
+                                                                      user-b-session-id))
+                                           doall)
+          _coupon_apply-response (apply-coupon coupon-name user-b-session-id)
+          cart-contents-response (request :get "/cart" {:session user-b-session-id})
+          cart-contents-response-body (-> cart-contents-response
+                                          :body
+                                          json/read-str)
+          expected-subtotal (+ (* (:price product-a)
+                                  (:amount-to-add product-a))
+                               (* (:price product-b)
+                                  (:amount-to-add product-b)))
+          expected-total (- expected-subtotal (* expected-subtotal coupon-discount))
+          expected-product-entry (fn [product]
+                                   {"name" (:name product)
+                                    "amount" (:amount-to-add product)
+                                    "unit_price" (-> product :price double)
+                                    "entry_price" (* (-> product :price double)
+                                                     (-> product :amount-to-add double))})]
+      (t/is (= 200 (:status cart-contents-response)))
+      (t/is (= (double expected-subtotal)
+               (get cart-contents-response-body "subtotal")))
+      (t/is (= (double expected-total)
+               (get cart-contents-response-body "total")))
+      (t/is (= [(expected-product-entry product-a)
+                (expected-product-entry product-b)]
+               (get cart-contents-response-body "entries"))))))
