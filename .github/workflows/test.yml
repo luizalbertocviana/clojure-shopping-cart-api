@@ -16,6 +16,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Prepare Containers
+        uses: isbang/compose-action@v1.1.0
+        with:
+          compose-file: "./docker-compose.yml"
+          down-flags: "--volumes"
+
       - name: Prepare java
         uses: actions/setup-java@v3
         with:
@@ -36,5 +42,5 @@ jobs:
           # cljstyle: 0.15.0      # cljstyle
           # cmd-exe-workaround: 'latest' # Replace `clojure` with `deps.clj` on Windows
 
-      - name: Get leiningen version
+      - name: Run integration tests
         run: lein test

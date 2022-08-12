@@ -18,10 +18,11 @@
 (defn create-new-discount-coupon [transactor name amount discount]
   (let [insertion {:insert-into :discounts
                    :columns [:name :amount :discount]
-                   :values [[name amount discount]]}]
-    (transactor (sql/format insertion))
+                   :values [[name amount discount]]}
+        result (transactor (sql/format insertion))]
     {:status 201
-     :body (str "Discount coupon " name " created")}))
+     :body {:message (str "Discount coupon " name " created")
+            :id (:id result)}}))
 
 (defn apply-valid-discount-coupon [transactor coupon-id user-id]
   (let [user-applied-coupon-insertion {:insert-into :applied-discounts

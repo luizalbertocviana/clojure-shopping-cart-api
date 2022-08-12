@@ -14,10 +14,10 @@
   [_ _ value]
   (ig/ref value))
 
-(defn config []
+(defn config [profile]
   (-> "config.edn"
       io/resource
-      aero/read-config))
+      (aero/read-config {:profile profile})))
 
 (defmethod ig/init-key :default
   [_ arg-map]
@@ -52,8 +52,8 @@
 
 (def system (atom nil))
 
-(defn start-system []
-  (let [config (config)]
+(defn start-system [profile]
+  (let [config (config profile)]
     (ig/load-namespaces config)
     (reset! system (ig/init config))))
 
@@ -63,7 +63,7 @@
 
 (defn create-migration [name]
   (let [minimal-migration-config
-        (-> (config)
+        (-> (config :default)
             :app.services.database/migrations
             (select-keys [:migration-dir]))]
     (migratus/create minimal-migration-config name)))
@@ -71,4 +71,4 @@
 (defn -main
   "starts server"
   [& args]
-  (start-system))
+  (start-system :default))

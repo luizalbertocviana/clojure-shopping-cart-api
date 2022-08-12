@@ -21,11 +21,11 @@
   [_ {:keys [db-connection]}]
   (fn
     ([sql-params]
-     (jdbc/execute! db-connection sql-params))
+     (jdbc/execute! db-connection sql-params {:return-keys true}))
     ([sql-params-1 sql-params-2]
      (jdbc/with-db-transaction [tx db-connection]
-       (jdbc/execute! tx sql-params-1)
-       (jdbc/execute! tx sql-params-2)))))
+       (jdbc/execute! tx sql-params-1 {:return-keys true})
+       (jdbc/execute! tx sql-params-2 {:return-keys true})))))
 
 (defmethod ig/init-key ::migrations
   [_ config]

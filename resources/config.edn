@@ -2,9 +2,12 @@
  ;; database connection
  :app.services.database/connection {:pool-name "db-pool"
                                     :adapter "postgresql"
-                                    :username #or [#env POSTGRES_USER "db_user"]
-                                    :password #or [#env POSTGRES_PASSWORD "db_password"]
-                                    :database-name #or [#env POSTGRES_DB "shopping_cart"]
+                                    :username #profile {:default  #or [#env POSTGRES_USER "db_user"]
+                                                        :test "test"}
+                                    :password #profile {:default  #or [#env POSTGRES_PASSWORD "db_password"]
+                                                        :test "test"}
+                                    :database-name #profile {:default #or [#env POSTGRES_DB "shopping_cart"]
+                                                             :test "test"}
                                     :server-name "localhost"
                                     :port-number #or [#env POSTGRES_PORT 5432]}
 
