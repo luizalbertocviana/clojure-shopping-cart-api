@@ -42,5 +42,5 @@ jobs:
           # cljstyle: 0.15.0      # cljstyle
           # cmd-exe-workaround: 'latest' # Replace `clojure` with `deps.clj` on Windows
 
-      - name: Get leiningen version
+      - name: Run integration tests
         run: lein test
