@@ -33,26 +33,35 @@
         {:status 409
          :body (str "User " name " already exists; id " user-id)}))))
 
+(defn log-logged-out-user-in [transactor querier user-id]
+  (let [insertion {:insert-into :sessions
+                   :columns [:user-id]
+                   :values [[user-id]]}
+        _ (transactor (sql/format insertion))
+        active-session-id (active-session querier user-id)]
+    {:status 200
+     :body {:session active-session-id}}))
+
+(defn log-existent-user-in [transactor querier user-id]
+  (let [active-session-id (active-session querier user-id)]
+    (if (not active-session-id)
+      (log-logged-out-user-in transactor querier user-id)
+      {:status 400
+       :body (str "user " user-id " already logged in; session " active-session-id)})))
+
+(defn log-user-in [transactor querier user-name]
+  (let [user-id (utils/user-exists querier user-name)]
+    (if user-id
+      (log-existent-user-in transactor querier user-id)
+      {:status 404
+       :body (str "User " user-name " does not exist")})))
+
 (defmethod ig/init-key ::login
   [_ {:keys [transactor querier]}]
   (fn [req]
     (let [body-params (:body-params req)
-          name (:name body-params)
-          user-id (utils/user-exists querier name)]
-      (if user-id
-        (let [active-session-id (active-session querier user-id)]
-          (if (not active-session-id)
-            (let [insertion {:insert-into :sessions
-                             :columns [:user-id]
-                             :values [[user-id]]}
-                  _ (transactor (sql/format insertion))
-                  active-session-id (active-session querier user-id)]
-              {:status 200
-               :body {:session active-session-id}})
-            {:status 400
-             :body (str "user " name " already logged in; session " active-session-id)}))
-        {:status 404
-         :body (str "User " name " does not exist")}))))
+          name (:name body-params)]
+      (log-user-in transactor querier name))))
 
 (defn log-active-session-out [transactor session-id]
   (let [update {:update :sessions
