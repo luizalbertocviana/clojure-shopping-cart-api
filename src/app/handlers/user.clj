@@ -54,25 +54,34 @@
         {:status 404
          :body (str "User " name " does not exist")}))))
 
+(defn log-active-session-out [transactor session-id]
+  (let [update {:update :sessions
+                :set {:expires-on [:now]}
+                :where [:= :id session-id]}]
+    (transactor (sql/format update))
+    {:status 200
+     :body (str "Session " session-id " finished")}))
+
+(defn log-existing-session-out [transactor querier session-id]
+  (if (utils/session-is-active querier session-id)
+    (log-active-session-out transactor session-id)
+    {:status 400
+     :body (str "Session " session-id " is not active")}))
+
+(defn log-user-out [transactor querier session-id]
+  (let [session-exists-query {:select [:id]
+                              :from [:sessions]
+                              :where [:= :id session-id]}
+        session-exists-result (querier (sql/format session-exists-query))
+        session-exists (= 1 (count session-exists-result))]
+    (if session-exists
+      (log-existing-session-out transactor querier session-id)
+      {:status 404
+       :body (str "Session " session-id " does not exist")})))
+
 (defmethod ig/init-key ::logout
   [_ {:keys [transactor querier]}]
   (fn [req]
     (let [body-params (:body-params req)
-          session-id (UUID/fromString (:session body-params))
-          session-exists-query {:select [:id]
-                                :from [:sessions]
-                                :where [:= :id session-id]}
-          session-exists-result (querier (sql/format session-exists-query))
-          session-exists (= 1 (count session-exists-result))]
-      (if session-exists
-        (if (utils/session-is-active querier session-id)
-          (let [update {:update :sessions
-                        :set {:expires-on [:now]}
-                        :where [:= :id session-id]}]
-            (transactor (sql/format update))
-            {:status 200
-             :body (str "Session " session-id " finished")})
-          {:status 400
-           :body (str "Session " session-id " is not active")})
-        {:status 404
-         :body (str "Session " session-id " does not exist")}))))
+          session-id (UUID/fromString (:session body-params))]
+      (log-user-out transactor querier session-id))))
